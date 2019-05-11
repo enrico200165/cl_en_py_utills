@@ -1,8 +1,12 @@
 
-
+import os
 import re
 import sqlparse
 import test_sql_01
+
+import global_defs as g
+
+
 
 # Sample code sqlparse: https://www.programcreek.com/python/example/66949/sqlparse.parse
 
@@ -12,50 +16,97 @@ import test_sql_01
 #print(parsed.tokens)
 
 
-def removeComments(string):
-    # remove all occurrences streamed comments (/*COMMENT */) from string
-    string = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,string)
-    # remove all occurrence single-line comments (# COMMENT\n ) from string
-    string = re.sub(re.compile("#.*" ) ,"" ,string)
-    string = re.sub(re.compile(" *\\\echo.*" ) ,"" ,string)
-
-    return string
 
 
-def parse_sql_tables(sql):
+previous_tokens = [None, None, None]
+
+
+def setPreviousToken(token):
+
+    assert len(previous_tokens) > 0
+
+    i = len(previous_tokens)-1;
+    while 1 <= i:
+        previous_tokens[i] = previous_tokens[i-1]
+        i = i-1
+    previous_tokens[i] = token
+    pass
+
+
+def clean_sql(sql):
 
     # remove comments
     # remove all occurance streamed comments (/*COMMENT */) from string
-    sql = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,sql)
-    sql = removeComments(sql)
+    sql= re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,sql)
+    # remove all occurrence single-line comments (# COMMENT\n ) from string
+    sql = re.sub(re.compile("#.*" ) ,"" ,sql)
+    sql = re.sub(re.compile(" *\\\echo.*" ) ,"" ,sql)
 
-    tables = []
-    stmt_idx = 0
-    statements = sqlparse.parse(sql)
-    for stmt in statements:
-        print("-" * 60)
-        stmt_idx = stmt_idx +1
-        tkn_idx = 0
-        for token in stmt.tokens:
-            tkn_idx = tkn_idx + 1
-            coord = "[{}][{}]".format(stmt_idx,tkn_idx)
+    lines = sql.splitlines()
+    non_empty_lines = []
+    for l in lines:
+        if len(l) == 0:
+            continue
+        if re.match("^\s*$",l):
+            continue
+        else:
+            non_empty_lines.append(l)
 
-            # skip separators
-            if re.match("[\s]+", token.value, flags=0):
-                # print('keyword {} {} "{}"'.format(coord,"blank",token.value))
-                continue
+    sql = os.linesep.join([s for s in non_empty_lines if s])
 
-            # parser only catches some keywors
-            if token.is_keyword:
-                print('keyword {} {} "{}"'.format(coord,"keyword",token.value))
-                continue
-            else:
-                print('keyword {} {} "{}"'.format(coord,"id",token.value))
-                pass
-    return tables
+    return sql
 
 
-parse_sql_tables(test_sql_01.sql_test_ddl_01)
-#parse_sql_tables(test_sql_01.sql_test_comments_01)
+def process_sql_create_stmt(stmt_lines):
 
-#parse_sql_tables("aaa/**/aaaabbb/*xxxxxxx*/bbbbbbbbbbcccc/*xxxxxxx*/ccccccccd#ddddd")
+    tokens = stmt_lines[0].split()
+    assert "create" in tokens or "CREATE" in tokens
+
+    table_name = None
+    for t in tokens:
+        if "_" in t:
+            table_name = t
+            break
+
+    print("tabella: {} in {}".format(table_name,tokens))
+    pass
+
+
+
+def process_stmt_lines(stmt_type, stmt_lines):
+
+    if stmt_type == g.SQLStmtType.CREATE_TABLE:
+        process_sql_create_stmt(stmt_lines)
+    elif stmt_type == g.SQLStmtType.STMT_UNKNOWN:
+        print("sconosciuto")
+    else:
+        pass
+
+
+
+def parse_sql(sql):
+
+    sql = clean_sql(sql)
+
+    cur_stmt_type = g.SQLStmtType.STMT_UNKNOWN
+    stmt_text_lines = []
+    lines = sql.splitlines()
+    for l in lines:
+
+        if "create " in l or "CREATE " in l:
+            process_stmt_lines(cur_stmt_type, stmt_text_lines)
+            cur_stmt_type = g.SQLStmtType.CREATE_TABLE
+            stmt_text_lines = []
+        elif "alter " in l or "ALTER " in l:
+            process_stmt_lines(cur_stmt_type, stmt_text_lines)
+            cur_stmt_type = g.SQLStmtType.ALTER_TABLE
+            stmt_text_lines = []
+        else:
+            pass
+
+        stmt_text_lines.append(l)
+
+    # process last statement
+    process_stmt_lines(cur_stmt_type, stmt_text_lines)
+
+parse_sql(test_sql_01.sql_test_ddl_01)

@@ -25,8 +25,20 @@ class DataLayerSchemi(Enum):
     TDL = "TDL"
 
 
+class SQLStmtType(Enum):
+    STMT_UNKNOWN = "unknown"
+    CREATE_TABLE = "Create Table"
+    DROP_TABLE = "drop table"
+    ALTER_TABLE = "alter table"
+    UPDATE = "update table"
+    INSERT = "insert"
+
+
+class IDType(Enum):
+    TABLE_NAME = "Table Name"
+    COL_NAME = "Column Name"
+    COL_TYPE = "Column Type"
 
 
 
-print(DataLayerNames.STAGING_AREA.value)
 
