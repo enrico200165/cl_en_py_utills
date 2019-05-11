@@ -14,6 +14,7 @@ class DataLayerNames(Enum):
 # Schema non sembra  guidare nulla,
 # questa modellazione probabilmente superflua
 class DataLayerSchemi(Enum):
+    # UNKNOWN = "layer unknown"
     MTD	= "MTD"
     BSC	= "BSC"
     STG = "STG"
@@ -25,8 +26,21 @@ class DataLayerSchemi(Enum):
     TDL = "TDL"
 
 
+class DBObjectsTypes(Enum):
+    # UNKNOWN = "layer unknown"
+    T = "tabella"
+    P	= "tabella partizionata"
+    Z = "tabella custom"
+    V	= "vista"
+    MV = "vista materializzata";
+    SEQ = "sequence"
+    BDA	= "BDA"
+    DMT = "DMT"
+    TDL = "TDL"
+
+
 class SQLStmtType(Enum):
-    STMT_UNKNOWN = "unknown"
+    UNKNOWN = "statement unknown"
     CREATE_TABLE = "Create Table"
     DROP_TABLE = "drop table"
     ALTER_TABLE = "alter table"
@@ -41,4 +55,14 @@ class IDType(Enum):
 
 
 
+layers_tablename_3acomp = {
 
+    DataLayerSchemi.MTD : [],
+    DataLayerSchemi.MTD : [],
+    DataLayerSchemi.MTD : [],
+    DataLayerSchemi.MTD : []
+
+}
+
+
+legal_patterns_list = None

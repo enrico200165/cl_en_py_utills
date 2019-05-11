@@ -5,7 +5,7 @@ import sqlparse
 import test_sql_01
 
 import global_defs as g
-
+import tokens_checks as tc
 
 
 # Sample code sqlparse: https://www.programcreek.com/python/example/66949/sqlparse.parse
@@ -67,17 +67,16 @@ def process_sql_create_stmt(stmt_lines):
         if "_" in t:
             table_name = t
             break
-
-    print("tabella: {} in {}".format(table_name,tokens))
-    pass
-
+    # print("tabella: {} in {}".format(table_name,tokens))
+    tc.check_table_name(t)
 
 
 def process_stmt_lines(stmt_type, stmt_lines):
 
+    print("processing stmt"+ "\n".join(stmt_lines))
     if stmt_type == g.SQLStmtType.CREATE_TABLE:
         process_sql_create_stmt(stmt_lines)
-    elif stmt_type == g.SQLStmtType.STMT_UNKNOWN:
+    elif stmt_type == g.SQLStmtType.UNKNOWN:
         print("sconosciuto")
     else:
         pass
@@ -88,7 +87,7 @@ def parse_sql(sql):
 
     sql = clean_sql(sql)
 
-    cur_stmt_type = g.SQLStmtType.STMT_UNKNOWN
+    cur_stmt_type = g.SQLStmtType.UNKNOWN
     stmt_text_lines = []
     lines = sql.splitlines()
     for l in lines:
