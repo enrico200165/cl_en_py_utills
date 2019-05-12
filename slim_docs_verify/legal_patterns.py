@@ -3,6 +3,7 @@ import re
 
 import global_defs as g
 import masks
+import legal_systems as ls
 
 """"
 ----- TERMINOLOGIA ------------------------------
@@ -149,12 +150,33 @@ class PatternWrapper(object):
     def checkString(self, s):
 
         groups = re.findall(self._regex_pattern_compiled, s)
+
+        captured_vals = []
         if groups is not None and len(groups) > 0:
             print("matched pattern {} on string{}".format(self._regex_for_mask, s) )
             for tuple in groups:
                 for m in tuple:
-                    print(m)
-        return True
+                    captured_vals.append(m)
+
+            # check captured versus variables etc
+            ret = True
+            for i,val in enumerate(self._parts_validation):
+                print("part["+str(i) + "] " + val.dumpToStr())
+                found = captured_vals.pop(0)
+                print("validating againsts captured: "+found)
+                if "sistema" in found:
+                    if "sorgente" in found:
+                        ret = ret and found in ls.destination_systems
+                    elif "BI" in found:
+                        ret = ret and found in ls.destination_systems
+                elif "etichetta" in found:
+                    print("found etichetta: "+found)
+                else:
+                    print("error")
+                    sys.exit(1)
+            return ret
+        else:
+            return False
 
 
     def dumpToStr(self):
