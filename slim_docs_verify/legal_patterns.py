@@ -86,10 +86,18 @@ class PatternWrapper(object):
     normal regex do not seem enough, at least at first sight
      it is a wrapper around the naming pattern
     """
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, pattern):
+        self._pattern = pattern
         self._parts_validation = []
         self._regex_for_mask = None
+        self._regex_pattern_compiled = None
+        self.generate_regex()
+        if self._regex_for_mask is not None and len(self._regex_for_mask) > 0:
+            self._regex_pattern_compiled = re.compile(self._regex_for_mask)
+        else:
+            print("error - exiting")
+            sys.exit(1)
+        pass
 
 
     def generate_regex(self, mask = None):
@@ -100,7 +108,7 @@ class PatternWrapper(object):
         """
 
         if mask is None:
-            mask = self._name
+            mask = self._pattern
 
         parts = mask.strip().split("_");
         new_parts = []
@@ -134,15 +142,25 @@ class PatternWrapper(object):
             else:
                 new_parts.append(p)
 
-        self._regex_for_mask = "_".join(new_parts)
+        self._regex_for_mask = "_".join(new_parts)+"$"
         #print("{}\n{}\n".format(mask,regex_for_mask ))
         return self._regex_for_mask
+
+    def checkString(self, s):
+
+        groups = re.findall(self._regex_pattern_compiled, s)
+        if groups is not None and len(groups) > 0:
+            print("matched pattern {} on string{}".format(self._regex_for_mask, s) )
+            for tuple in groups:
+                for m in tuple:
+                    print(m)
+        return True
 
 
     def dumpToStr(self):
 
         s = "{PatternWrapper}\n"
-        s += "part:  "+self._name
+        s += "part:  "+self._pattern
         s += "\nregex: "+self._regex_for_mask
         for (i,p) in enumerate(self._parts_validation):
             s += "\n"+p.dumpToStr(i)
@@ -158,10 +176,11 @@ def generate_regexes():
         if len(l) == 0:
             continue
         p = PatternWrapper(l)
-        #p.elabora()
-        p.generate_regex(l)
-        print(p.dumpToStr())
-        # pattern_wrappers_list.append(p)
+        # print(p.dumpToStr())
+
+        s = "T_STG_sistemasorgente_DT_miatabella"
+        p. checkString(s)
+
 
     return pattern_wrappers_list
 
