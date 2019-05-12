@@ -65,4 +65,7 @@ layers_tablename_3acomp = {
 }
 
 
+RE_CAPTURE_GROUP_SIMPLE = "(.*?)"
+RE_VARIABLE_SIMPLE = "<.*?>"
+
 legal_patterns_list = None

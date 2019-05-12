@@ -8,16 +8,6 @@ import global_defs as g
 import tokens_checks as tc
 
 
-# Sample code sqlparse: https://www.programcreek.com/python/example/66949/sqlparse.parse
-
-
-# print(sqlparse.format('select * from foo', reindent=True))
-# parsed = sqlparse.parse('select * from foo')[0]
-#print(parsed.tokens)
-
-
-
-
 previous_tokens = [None, None, None]
 
 
@@ -34,7 +24,7 @@ def setPreviousToken(token):
 
 
 def clean_sql(sql):
-
+    """ removes empty lines, comments, echo statements"""
     # remove comments
     # remove all occurance streamed comments (/*COMMENT */) from string
     sql= re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,sql)
@@ -58,7 +48,7 @@ def clean_sql(sql):
 
 
 def process_sql_create_stmt(stmt_lines):
-
+    """ check if CREATE TABLE is correct """
     tokens = stmt_lines[0].split()
     assert "create" in tokens or "CREATE" in tokens
 
@@ -72,7 +62,7 @@ def process_sql_create_stmt(stmt_lines):
 
 
 def process_stmt_lines(stmt_type, stmt_lines):
-
+    """ detects type of statement and call appropriate check"""
     print("processing stmt"+ "\n".join(stmt_lines))
     if stmt_type == g.SQLStmtType.CREATE_TABLE:
         process_sql_create_stmt(stmt_lines)
@@ -84,7 +74,7 @@ def process_stmt_lines(stmt_type, stmt_lines):
 
 
 def parse_sql(sql):
-
+    """ TODO probably redundant with other """
     sql = clean_sql(sql)
 
     cur_stmt_type = g.SQLStmtType.UNKNOWN
