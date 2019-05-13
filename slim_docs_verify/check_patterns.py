@@ -103,15 +103,16 @@ class PartValidation(object):
     this is the list of the (var) validations for one part
     """
 
-    def __init__(self, var_validation, part):
+    def __init__(self, var_validation, part, part_str):
         self._var_validations = [var_validation]
-        self._part = part # part of the mask
+        self._part_nr = part # part of the mask
+        self._part_str = part_str
 
     def add_var(self, var_validation):
         self._var_validations.append(var_validation)
 
     def dumpToStr(self):
-        s = "part validations"
+        s = "part validation, part["+str(self._part_nr) + "] " + self._part_str
         for i, v in enumerate(self._var_validations):
             s += "\nvar val[{}] ".format(i) + v.dumpToStr(i)
         return s
@@ -147,7 +148,7 @@ class PatternWrapper(object):
         if mask is None:
             mask = self._e2bi_pattern
 
-        parts = mask.strip().split("_");
+        parts = mask.strip().split("_") # FAILS with <aaa_bbb>
         new_parts = []
         matching_group_idx = 0 # track matching groups
         for p_idx, part in enumerate(parts):
@@ -156,20 +157,20 @@ class PatternWrapper(object):
             elif re.match(g.RE_VARIABLE_SIMPLE+"2"+g.RE_VARIABLE_SIMPLE, part):
                 # per <nome tabella A>2<nome tabella B>
 
+                twovars = part.split("2")
                 # generate var entry, 2 variables here
                 var1_validation = VariableValidation(part, matching_group_idx)
                 matching_group_idx = matching_group_idx+1
-                var1_validation.add_vars(part)
-                part_validation = PartValidation(var1_validation,p_idx)
+                var1_validation.add_vars(twovars[0])
+                part_validation = PartValidation(var1_validation, p_idx, part)
 
                 var2_validation = VariableValidation(part, matching_group_idx)
                 matching_group_idx = matching_group_idx+1
-                var2_validation.add_vars(part)
+                var2_validation.add_vars(twovars[1])
 
                 part_validation.add_var(var2_validation)
-                #print(part_validation.dumpTostr())
+                print(part_validation.dumpToStr())
                 self._parts_validation.append(part_validation)
-
                 pass
 
             elif re.match("^"+g.RE_VARIABLE_SIMPLE+"$", part):
@@ -180,7 +181,7 @@ class PatternWrapper(object):
                 matching_group_idx = matching_group_idx+1
                 var_validation.add_vars(part)
                 # add part validation
-                part_validation = PartValidation(var_validation,p_idx)
+                part_validation = PartValidation(var_validation,p_idx, part)
                 # print(part_validation.dumpTostr())
                 self._parts_validation.append(part_validation)
 
@@ -190,8 +191,8 @@ class PatternWrapper(object):
                 part = part[1:-1] # remove {}
                 assert len(part) > 0
                 if not re.match(g.RE_VARIABLE_SIMPLE, part): # only constants ?
-                    part = part.replace("{", "(").replace("}", ")").replace("/", "|")
-                    new_parts.append("("+part+")")
+                    part = part.replace("/", "|")
+                    new_parts.append("(?:"+part+")")
                 else: # mix of constants and vars
 
                     # funziona solo con variabile singola
@@ -205,7 +206,7 @@ class PatternWrapper(object):
                         else:
                             var_validation.add_consts(a)
                     # add part validation
-                    part_validation = PartValidation(var_validation,p_idx)
+                    part_validation = PartValidation(var_validation,p_idx, part)
                     #print(part_validation.dumpTostr())
                     self._parts_validation.append(part_validation)
 
@@ -255,20 +256,24 @@ class PatternWrapper(object):
     def dumpToStr(self):
 
         s = "{PatternWrapper}\n"
-        s += "e2bi:  "+self._e2bi_pattern
+        s += "e2bi:   "+self._e2bi_pattern
         s += "\nregex: "+self._regex_for_mask
-        for (i,p) in enumerate(self._parts_validation):
+        for i, p in enumerate(self._parts_validation):
             s += "\n"+p.dumpToStr()
         return s
 
 
 
-def generate_pattern_wrappers():
+def generate_pattern_wrappers(dummy_single_test = None):
     """from list of E2BI patterns build the parse objects that contain
     the objects is needed to check that e2bi pattern against a string
     """
     pattern_wrappers_list = []
-    mask_lines = e2bi_patterns.patterns_list.split("\n")
+    if dummy_single_test is None:
+        mask_lines = e2bi_patterns.patterns_list.split("\n")
+    else:
+        print("working with dummy pattern: "+dummy_single_test)
+        mask_lines = [dummy_single_test]
     for l in mask_lines:
         if len(l) == 0:
             continue
