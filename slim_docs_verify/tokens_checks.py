@@ -2,7 +2,7 @@
 
 import sys
 import re
-import masks
+import e2bi_patterns
 
 
 import global_defs as g

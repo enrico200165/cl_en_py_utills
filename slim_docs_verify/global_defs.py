@@ -65,7 +65,8 @@ layers_tablename_3acomp = {
 }
 
 
-RE_CAPTURE_GROUP_SIMPLE = "(.*?)"
+# RE_CAPTURE_GROUP_SIMPLE = "(.*?)" NON FUNZIONA
+RE_CAPTURE_GROUP_SIMPLE = "([^_]*?)"
 RE_VARIABLE_SIMPLE = "<.*?>"
 
 legal_patterns_list = None

@@ -1,8 +1,12 @@
 
 
-masks_lines_lists = "MV_ODS_{<sistema sorgente>/<sistema BI>/COM}_{DT/LV/LH/LM/SC}_<label>"
+#masks_lines_lists = "MV_ODS_{<sistema sorgente>/<sistema BI>/COM}_{DT/LV/LH/LM/SC}_<label>"
 
-masks_lines_list = '''
+
+#patterns_list  = "T_BSC_<sistema sorgente>_<nome tabella sorgente>"
+
+
+patterns_list = '''
 T_MTD_<raggruppamento>_{DT/LV/LH/LM/SC/DL}_<label>	
 T_BSC_<sistema sorgente>_<nome tabella sorgente>
 T_STG_{<sistema sorgente>/<sistema BI>}_{DT/LV/LH/LM/SC/DL}_<nome tabella o vista senza prefissi>_[KEY/RT/DD/WW/MM]	

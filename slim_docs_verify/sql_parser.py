@@ -98,4 +98,3 @@ def parse_sql(sql):
     # process last statement
     process_stmt_lines(cur_stmt_type, stmt_text_lines)
 
-parse_sql(test_sql_01.sql_test_ddl_01)
