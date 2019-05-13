@@ -138,20 +138,96 @@ class PatternWrapper(object):
         pass
 
 
-    def generate_regex(self, mask = None):
+    def adjust_e2bi_pattern(self, s):
+        """ eventual changes/adjustments to make subsequen partsing easier """
+
+        # rimuovi _ dentro < _ >
+        underscore = ".*<.*_.*>"
+        inside = False
+        if re.match(underscore, s):
+            copy = ""
+            for c in s:
+                if c == "<":
+                    inside = True
+                if c == ">":
+                    inside = False
+                if c == "_" and inside:
+                    c = "-"
+                copy += c
+            s = copy
+        return s
+
+
+    def split_e2bi_patterm(self, e2bipattern):
+
+        parts = []
+        part_is_optional = []
+
+        opzionale = False
+        in_variable = False # between <>
+        i = 0
+        cur_part = ""
+        while i < len(e2bipattern):
+            c = e2bipattern[i]
+            #print(c)
+
+            # get context
+            if c == "[":
+                opzionale = True
+                c = "{"  # attenzione se in futuro controllo per i ver {
+            if c == "]":
+                c = "}"  # attenzione se in futuro controllo per il vero }
+            if c == "<":
+                in_variable = True
+            if c == ">" and in_variable:
+                in_variable = False
+
+            if c == " " and not in_variable:
+                print("found space outside variable, pattern: "+e2bipattern)
+                i = i+1
+                continue
+
+            if c == "_" and not in_variable:
+                parts.append(cur_part)
+                cur_part = ""
+                part_is_optional.append(opzionale)
+                i = i+1
+                continue
+
+            cur_part += c
+            i = i+1
+
+        parts.append(cur_part)
+        part_is_optional.append(opzionale)
+
+        # adjust is optional
+        part_is_optional = [False] + part_is_optional
+        part_is_optional.pop()
+
+        return (parts, part_is_optional)
+
+
+    def generate_regex(self, e2bipattern = None):
         """ itera sui pattern e li trasforma in regez
         now la trasformazione è parziale
         now opera su un dato globale
         TODO
         """
 
-        if mask is None:
-            mask = self._e2bi_pattern
+        if e2bipattern is None:
+            e2bipattern = self._e2bi_pattern
 
-        parts = mask.strip().split("_") # FAILS with <aaa_bbb>
+
+        e2bipattern = self.adjust_e2bi_pattern(e2bipattern)
+
+        #parts = e2bipattern.strip().split("_")
+        e2bipattern_parts = self.split_e2bi_patterm(e2bipattern.strip())
+
+        (e2bipattern_parts, part_is_optional) = self.split_e2bi_patterm(e2bipattern)
+
         new_parts = []
         matching_group_idx = 0 # track matching groups
-        for p_idx, part in enumerate(parts):
+        for p_idx, part in enumerate(e2bipattern_parts):
             if False:
                 pass
             elif re.match(g.RE_VARIABLE_SIMPLE+"2"+g.RE_VARIABLE_SIMPLE, part):
@@ -171,7 +247,8 @@ class PatternWrapper(object):
                 part_validation.add_var(var2_validation)
                 print(part_validation.dumpToStr())
                 self._parts_validation.append(part_validation)
-                pass
+
+                new_parts.append(g.RE_CAPTURE_GROUP_SIMPLE+"2"+g.RE_CAPTURE_GROUP_SIMPLE) # part of our regest
 
             elif re.match("^"+g.RE_VARIABLE_SIMPLE+"$", part):
                 # print("var: "+p) variable must use capturing group
@@ -215,7 +292,7 @@ class PatternWrapper(object):
                 new_parts.append(part)
 
         self._regex_for_mask = "^"+"_".join(new_parts)+"$"
-        #print("{}\n{}\n".format(mask,regex_for_mask ))
+        #print("{}\n{}\n".format(e2bipattern,regex_for_mask ))
         return self._regex_for_mask
 
 

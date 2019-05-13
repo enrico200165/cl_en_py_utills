@@ -20,7 +20,8 @@ T_ODS_{<sistema sorgente>/<sistema BI>/ALL}_{DT/LV/LH/LM/LN/TT/SC}_<nome tabella
 T_DMT_<sistema sorgente>/<sistema BI>_{DM/FT/FA/LM}_<nome tabella A>2<nome tabella B>	
 P_<nome tabella senza prefisso T_>_<nome campo>_{<valore>|<range_valori>}					
 Z_MTD_<raggruppamento>_{DT/LV/LH/LM/SC/DL}_<label> 					
-V_MTD_<raggruppamento>_{DT/LV/LH/LM/SC}_<label> *	V_BSC_<sistema sorgente>_<label>	
+V_MTD_<raggruppamento>_{DT/LV/LH/LM/SC}_<label>
+V_BSC_<sistema sorgente>_<label>	
 V_STG_{<sistema sorgente>/<sistema BI}_{DT/LV/LH/LM/SC}_<label>
 V_ODS_{<sistema sorgente>/<sistema BI>/COM}_{DT/LV/LH/LM/SC}_<label>
 V_DMT_<sistema sorgente>/<sistema BI>_{DM/FT/FA/LM}_<label>
