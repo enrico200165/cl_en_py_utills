@@ -361,7 +361,6 @@ def generate_pattern_wrappers(dummy_single_test = None):
     return pattern_wrappers_list
 
 
-
 s = "T_STG_sistemasorgente_DT_miatabella"
 # p. checkString(s)
 

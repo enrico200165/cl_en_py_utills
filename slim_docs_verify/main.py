@@ -28,7 +28,7 @@ def main():
         print(e2bipattern.dumpToStr())
 
 
-    parser_statements.parse_sql(test_sql__statements_01.sql_test_ddl_01)
+    parser_statements.detect_build_dispatch_sqlstmt(test_sql__statements_01.sql_test_ddl_01)
 
 
 main()

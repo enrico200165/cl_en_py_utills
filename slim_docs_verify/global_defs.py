@@ -46,6 +46,7 @@ class SQLStmtType(Enum):
     ALTER_TABLE = "alter table"
     UPDATE = "update table"
     INSERT = "insert"
+    DISTRIBUTE = "distribute"
 
 
 class IDType(Enum):

@@ -1,8 +1,5 @@
 
-import os
-import re
-import sqlparse
-import test_sql__statements_01
+import sys
 
 import global_defs as g
 import tokens_checks as tc
@@ -26,24 +23,37 @@ def process_sql_create_stmt(stmt_lines_list):
     return tc.check_table_name(t)
 
 
-
-
 def process_stmt_lines(stmt_type, stmt_lines):
     """ routes statement types to appropriate handler"""
 
     print("processing stmt: " +stmt_lines[0]+ "\n")
 
     ret = False
-    if stmt_type == g.SQLStmtType.CREATE_TABLE:
+    if False: # just for uniform syntax
+        pass
+    elif stmt_type == g.SQLStmtType.CREATE_TABLE:
         ret = process_sql_create_stmt(stmt_lines)
+    elif stmt_type == g.SQLStmtType.ALTER_TABLE:
+        print("Warn: statement not yet supported: "+stmt_lines[0])
+        ret = False
+    elif stmt_type == g.SQLStmtType.INSERT:
+        print("Warn: statement not yet supported: "+stmt_lines[0])
+        ret = False
+    elif stmt_type == g.SQLStmtType.DISTRIBUTE:
+        print("Warn: statement not yet supported: "+stmt_lines[0])
+        ret = False
     elif stmt_type == g.SQLStmtType.UNKNOWN:
-        pass # shoul only happen the first time
+        print("Warn: statement not yet supported: "+stmt_lines[0])
+        ret = False
     else:
+        m = ": "+stmt_lines[0] if stmt_lines[0] is not None else ""
+        print("Warn: unable to process unknown statmement type"+m)
+        sys.exit(1)
         pass
 
 
 
-def parse_sql(sql):
+def detect_build_dispatch_sqlstmt(sql):
     """ TODO probably redundant with other """
 
     sql = ih.clean_sql_text(sql)
@@ -60,18 +70,29 @@ def parse_sql(sql):
                 process_stmt_lines(cur_stmt_type, curr_stmt_text_lines)
                 curr_stmt_text_lines = []
             cur_stmt_type = g.SQLStmtType.CREATE_TABLE
+
         elif "alter " in l or "ALTER " in l:
             if cur_stmt_type != g.SQLStmtType.UNKNOWN:
                 process_stmt_lines(cur_stmt_type, curr_stmt_text_lines)
                 curr_stmt_text_lines = []
             cur_stmt_type = g.SQLStmtType.ALTER_TABLE
+
         elif "distribute " in l or "DISTRIBUTE " in l:
             if cur_stmt_type != g.SQLStmtType.UNKNOWN:
                 process_stmt_lines(cur_stmt_type, curr_stmt_text_lines)
                 curr_stmt_text_lines = []
             cur_stmt_type = g.SQLStmtType.ALTER_TABLE
+
         else:
+            """qui NON devo e non posso fare nulla, dato che solo la prima
+            riga dello statement identifica il tipo statement, ma qui le scorriamo
+            tutte per costruire il corpo dello statement
+            
+            al limite qui FORSE potrebbe andare la rilevazione di qualche situazione
+            particolaree per patch programmative
+            """
             pass
+
 
         curr_stmt_text_lines.append(l)
 
