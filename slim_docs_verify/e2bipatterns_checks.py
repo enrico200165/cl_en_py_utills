@@ -41,7 +41,7 @@ sul domino delle variabili    per fare questo ho bisogno di salvare:
 """
 
 
-class VariableValidation(object):
+class PatternVariableValidation(object):
     """ PREMESSA: ogni parte può contenere una o più variabili
     ex. in MV_ODS_{<sistema sorgente>/<sistema BI>/COM}_{DT/LV/LH/LM/SC}_<label>
     la parte 3 contiene una variabile: {<sistema sorgente>/<sistema BI>/COM}
@@ -98,7 +98,7 @@ class VariableValidation(object):
         return s
 
 
-class PartValidation(object):
+class PatternPartValidation(object):
     """ a part can correspond to more than 1 variable
     this is the list of the (var) validations for one part
     """
@@ -235,12 +235,12 @@ class PatternWrapper(object):
 
                 twovars = part.split("2")
                 # generate var entry, 2 variables here
-                var1_validation = VariableValidation(part, matching_group_idx)
+                var1_validation = PatternVariableValidation(part, matching_group_idx)
                 matching_group_idx = matching_group_idx+1
                 var1_validation.add_vars(twovars[0])
-                part_validation = PartValidation(var1_validation, p_idx, part)
+                part_validation = PatternPartValidation(var1_validation, p_idx, part)
 
-                var2_validation = VariableValidation(part, matching_group_idx)
+                var2_validation = PatternVariableValidation(part, matching_group_idx)
                 matching_group_idx = matching_group_idx+1
                 var2_validation.add_vars(twovars[1])
 
@@ -254,11 +254,11 @@ class PatternWrapper(object):
                 # print("var: "+p) variable must use capturing group
 
                 # generate var entry, 1 variable here
-                var_validation = VariableValidation(part, matching_group_idx)
+                var_validation = PatternVariableValidation(part, matching_group_idx)
                 matching_group_idx = matching_group_idx+1
                 var_validation.add_vars(part)
                 # add part validation
-                part_validation = PartValidation(var_validation,p_idx, part)
+                part_validation = PatternPartValidation(var_validation, p_idx, part)
                 # print(part_validation.dumpTostr())
                 self._parts_validation.append(part_validation)
 
@@ -274,7 +274,7 @@ class PatternWrapper(object):
 
                     # funziona solo con variabile singola
                     # gestione variabile
-                    var_validation = VariableValidation(part, matching_group_idx)
+                    var_validation = PatternVariableValidation(part, matching_group_idx)
                     matching_group_idx = matching_group_idx+1
                     alternatives = part.split("/")
                     for a in alternatives:
@@ -283,7 +283,7 @@ class PatternWrapper(object):
                         else:
                             var_validation.add_consts(a)
                     # add part validation
-                    part_validation = PartValidation(var_validation,p_idx, part)
+                    part_validation = PatternPartValidation(var_validation, p_idx, part)
                     #print(part_validation.dumpTostr())
                     self._parts_validation.append(part_validation)
 

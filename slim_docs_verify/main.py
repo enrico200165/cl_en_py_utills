@@ -1,10 +1,10 @@
 
 import read_clipboard as clbd
-import sql_parser
-import test_sql_01
+import parser_statements
+import test_sql__statements_01
 
 import global_defs as g
-import check_patterns as lp
+import e2bipatterns_checks as lp
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
         print(e2bipattern.dumpToStr())
 
 
-    #sql_parser.parse_sql(test_sql_01.sql_test_ddl_01)
+    parser_statements.parse_sql(test_sql__statements_01.sql_test_ddl_01)
 
 
 main()
