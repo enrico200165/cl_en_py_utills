@@ -56,14 +56,6 @@ class IDType(Enum):
 
 
 
-layers_tablename_3acomp = {
-
-    DataLayerSchemi.MTD : [],
-    DataLayerSchemi.MTD : [],
-    DataLayerSchemi.MTD : [],
-    DataLayerSchemi.MTD : []
-
-}
 
 
 # RE_CAPTURE_GROUP_SIMPLE = "(.*?)" NON FUNZIONA
@@ -71,3 +63,4 @@ RE_CAPTURE_GROUP_SIMPLE = "([^_]*?)"
 RE_VARIABLE_SIMPLE = "<.*?>"
 
 legal_patterns_list = None
+

@@ -6,7 +6,7 @@ import tokens_checks as tc
 import sql_preprocess as ih
 
 
-def process_sql_create_stmt(stmt_lines_list):
+def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
     """ check if CREATE TABLE is correct """
 
     first_stmt_line = stmt_lines_list[0]
@@ -20,10 +20,10 @@ def process_sql_create_stmt(stmt_lines_list):
             table_name = t
             break
     # check if table name is matched by one of the patterns
-    return tc.check_table_name(t)
+    return tc.check_table_name(t, table_patterns_checker)
 
 
-def process_stmt_lines(stmt_type, stmt_lines):
+def process_stmt_lines(stmt_type, stmt_lines, table_patterns_checker):
     """ routes statement types to appropriate handler"""
 
     print("processing stmt: " +stmt_lines[0]+ "\n")
@@ -32,7 +32,7 @@ def process_stmt_lines(stmt_type, stmt_lines):
     if False: # just for uniform syntax
         pass
     elif stmt_type == g.SQLStmtType.CREATE_TABLE:
-        ret = process_sql_create_stmt(stmt_lines)
+        ret = check_sql_create_stmt(stmt_lines, table_patterns_checker)
     elif stmt_type == g.SQLStmtType.ALTER_TABLE:
         print("Warn: statement not yet supported: "+stmt_lines[0])
         ret = False
@@ -49,11 +49,11 @@ def process_stmt_lines(stmt_type, stmt_lines):
         m = ": "+stmt_lines[0] if stmt_lines[0] is not None else ""
         print("Warn: unable to process unknown statmement type"+m)
         sys.exit(1)
-        pass
 
 
 
-def detect_build_dispatch_sqlstmt(sql):
+
+def detect_build_dispatch_sqlstmt(sql, table_patterns_checker):
     """ TODO probably redundant with other """
 
     sql = ih.clean_sql_text(sql)
@@ -67,21 +67,21 @@ def detect_build_dispatch_sqlstmt(sql):
         # detect start of a statement and process previous
         if "create " in l or "CREATE " in l:
             if cur_stmt_type != g.SQLStmtType.UNKNOWN:
-                process_stmt_lines(cur_stmt_type, curr_stmt_text_lines)
+                process_stmt_lines(cur_stmt_type, curr_stmt_text_lines, table_patterns_checker)
                 curr_stmt_text_lines = []
             cur_stmt_type = g.SQLStmtType.CREATE_TABLE
 
         elif "alter " in l or "ALTER " in l:
             if cur_stmt_type != g.SQLStmtType.UNKNOWN:
-                process_stmt_lines(cur_stmt_type, curr_stmt_text_lines)
+                process_stmt_lines(cur_stmt_type, curr_stmt_text_lines, table_patterns_checker)
                 curr_stmt_text_lines = []
             cur_stmt_type = g.SQLStmtType.ALTER_TABLE
 
         elif "distribute " in l or "DISTRIBUTE " in l:
             if cur_stmt_type != g.SQLStmtType.UNKNOWN:
-                process_stmt_lines(cur_stmt_type, curr_stmt_text_lines)
+                process_stmt_lines(cur_stmt_type, curr_stmt_text_lines, table_patterns_checker)
                 curr_stmt_text_lines = []
-            cur_stmt_type = g.SQLStmtType.ALTER_TABLE
+            cur_stmt_type = g.SQLStmtType.DISTRIBUTE
 
         else:
             """qui NON devo e non posso fare nulla, dato che solo la prima
@@ -97,5 +97,5 @@ def detect_build_dispatch_sqlstmt(sql):
         curr_stmt_text_lines.append(l)
 
     # process last statement
-    process_stmt_lines(cur_stmt_type, curr_stmt_text_lines)
+    process_stmt_lines(cur_stmt_type, curr_stmt_text_lines, table_patterns_checker)
 

@@ -20,15 +20,21 @@ def main():
     # p = "T_BSC_<sistema sorgente>2<nome tabella sorgente>"
     # p = "FK_<nome tabella padre senza prefisso T>[_ <label>]"
     #p = "FK_<nome tabella padre senza prefisso T_>[_ <label>]"
-    p = "T_STG_{<sistema sorgente>/<sistema BI>}_{DT/LV/LH/LM/SC/DL}_<nome tabella o vista senza prefissi>_[KEY/RT/DD/WW/MM]"
+    #p = "T_STG_{<sistema sorgente>/<sistema BI>}_{DT/LV/LH/LM/SC/DL}_<nome tabella o vista senza prefissi>_[KEY/RT/DD/WW/MM]"
+    p = "FK_<sistema sorgente>_TT_KK"
 
+
+    sql = "create table FK_GDO_TT_KK"
+
+
+    # generate pattern checker objects, currently column names
     legal_patterns_list = lp.generate_pattern_wrappers(p)
     print("generated object that check an edbi pattern against a string")
     for e2bipattern in legal_patterns_list:
         print(e2bipattern.dumpToStr())
 
-
-    parser_statements.detect_build_dispatch_sqlstmt(test_sql__statements_01.sql_test_ddl_01)
+    parser_statements.detect_build_dispatch_sqlstmt(sql,
+                                                    legal_patterns_list)
 
 
 main()

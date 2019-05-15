@@ -49,16 +49,18 @@ class PatternVariableValidation(object):
     la parte 5 contiene 2 variabili
     per ogni parte che contiene almeno una variabile devo salvare
     lista costanti e lista variabili, vedi doc algoritmo in testa modulo
-    SCOPO: contenitore lista costanti e lista variabili di una parte
+
+    SCOPO: contenere UNA posizione variabile, in cui possono essere più variabili in alternativa
+    ex. _{<sistema sorgente>/<sistema BI>
+     lista eventuali costanti
     USO: contenuti consultati dopo il matching(capturing)
-    CONTEXT: contenuta negli oggeti che gestiscono il matching,
-    pressibilmente in lista con corrispondenza posizionale
+    CONTEXT: una parte conterrà uno di questi oggetti per ogni posizione variabile
     """
     def __init__(self, part_string, pos):
         self._part = part_string
-        self._vars = []
+        self._altern_vars_for_single_position = []
         self._consts = []
-        self._part_pos = pos # num of corresponding capturing group
+        self._var_slot_pos = pos # num of corresponding capturing group
         # NB capturing group, not part, a part can have more than one
         # variable, this is the index of the capturing group, global
         # not of the part
@@ -66,18 +68,18 @@ class PatternVariableValidation(object):
     @property
     def vars(self):
         pass
-        return self._vars
+        return self._altern_vars_for_single_position
 
 
     @property
-    def part_pos(self):
+    def var_slot_pos(self):
         pass
-        return self._part_pos
+        return self._var_slot_pos
 
     def add_vars(self, vars):
         if not isinstance(vars, list):
             vars = [vars]
-        self._vars.extend(vars)
+        self._altern_vars_for_single_position.extend(vars)
 
     @property
     def consts(self):
@@ -89,11 +91,32 @@ class PatternVariableValidation(object):
             consts = [consts]
         self._consts.extend(consts)
 
+
+    def is_matched(self, variable_part_value):
+
+        # check if one of the eventual constants
+        if variable_part_value in self._consts:
+            return True
+
+        # check the variables, the variable name tells
+        # which domain to check
+        for cur_alternative_var  in self._altern_vars_for_single_position:
+            if "istem" in cur_alternative_var:
+                if "orgent" in cur_alternative_var:
+                    return variable_part_value in ls.source_systems
+                elif "estin" in cur_alternative_var:
+                    return variable_part_value in ls.destination_systems
+                else:
+                    print("ERROR: unrecognized variale")
+
+        return False
+
+
     def dumpToStr(self, i = None):
         s ="["+str(i)+"] " if i is not None else ""
-        s += "pos("+str(self.part_pos)+")"
+        s += "pos(" + str(self.var_slot_pos) + ")"
         s += " part: "+self._part
-        s += " - vars:" +", ".join(self._vars)
+        s += " - vars:" +", ".join(self._altern_vars_for_single_position)
         s += " - consts: "+", ".join(self._consts)
         return s
 
@@ -104,19 +127,27 @@ class PatternPartValidation(object):
     """
 
     def __init__(self, var_validation, part, part_str):
-        self._var_validations = [var_validation]
+        self._var_pos_validations = [var_validation]
         self._part_nr = part # part of the mask
         self._part_str = part_str
 
     def add_var(self, var_validation):
-        self._var_validations.append(var_validation)
+        self._var_pos_validations.append(var_validation)
 
-    def dumpToStr(self):
-        s = "part validation, part["+str(self._part_nr) + "] " + self._part_str
-        for i, v in enumerate(self._var_validations):
-            s += "\nvar val[{}] ".format(i) + v.dumpToStr(i)
+    def dumpToStr(self, verbose = None):
+        s = ""
+        if verbose:
+            s += "part validation, "
+        s += "part["+str(self._part_nr) + "] " + self._part_str
+        if verbose:
+            for i, v in enumerate(self._var_pos_validations):
+                s += "\nvar val[{}] ".format(i) + v.dumpToStr(i)
         return s
 
+    @property
+    def variables_positions(self):
+        pass
+        return self._var_pos_validations
 
 
 class PatternWrapper(object):
@@ -137,6 +168,9 @@ class PatternWrapper(object):
             sys.exit(1)
         pass
 
+    @property
+    def e2bi_pattern(self):
+        return self._e2bi_pattern
 
     def adjust_e2bi_pattern(self, s):
         """ eventual changes/adjustments to make subsequen partsing easier """
@@ -296,47 +330,50 @@ class PatternWrapper(object):
         return self._regex_for_mask
 
 
-    def checkString(self, s):
+    def check_stmt_token(self, s):
 
         # match groups
         captured_vals = []
-        groups = re.findall(self._regex_pattern_compiled, s)
-        if groups is not None and len(groups) > 0:
+        captured_groups = re.findall(self._regex_pattern_compiled, s)
+        if captured_groups is not None and len(captured_groups) > 0:
             print("matched pattern {} on string {}".format(self._regex_for_mask, s) )
-            for tuple in groups:
-                for m in tuple:
-                    captured_vals.append(m)
-            print("groups: "+", ".join(captured_vals))
+            for capt_grops in captured_groups:
+                    captured_vals.append(capt_grops)
+            # print("groups: "+", ".join(captured_vals))
+            # print("matched e2bi pattern vs. string:\n" + self._e2bi_pattern+"\n"+s)
             pass
         else:
             return False
+
         # check captured versus variables etc
         ret = True
-        print("matched e2bi pattern vs. string:\n" + self._e2bi_pattern+"\n"+s)
         for i, part_val in enumerate(self._parts_validation):
             print("part["+str(i) + "] "+ part_val.dumpToStr())
-            found = captured_vals[part_val.part_pos]
-            print("againsts captured value: "+found)
-            if "sistema" in found:
-                if "sorgente" in found:
-                    ret = ret and found in ls.destination_systems
-                elif "BI" in found:
-                    ret = ret and found in ls.destination_systems
-            elif "etichetta" in found:
-                print("found etichetta: "+found)
-            else:
-                print("error")
-                sys.exit(1)
+
+            # iteriamo sulle POSIZIONI delle variabili
+            # stessa pos può avere più var: ex. _<var1>/<var2>
+            # qui dovrei andare sulla variabile
+            ret = True
+            for vp_idx, var_position in enumerate(part_val.variables_positions):
+                capt_group_idx_for_var = var_position.var_slot_pos
+                matched_group_val = captured_groups[capt_group_idx_for_var]
+                if not var_position.is_matched(matched_group_val):
+                    print("could not match part: "+part_val.dumpToStr())
+                    return False
+                else:
+                    pass
+
         return ret
 
 
-    def dumpToStr(self):
+    def dumpToStr(self, verbose = None):
 
         s = "{PatternWrapper}\n"
         s += "e2bi:   "+self._e2bi_pattern
-        s += "\nregex: "+self._regex_for_mask
-        for i, p in enumerate(self._parts_validation):
-            s += "\n"+p.dumpToStr()
+        if verbose is not None:
+            s += "\nregex: "+self._regex_for_mask
+            for i, p in enumerate(self._parts_validation):
+                s += "\n"+p.dumpToStr()
         return s
 
 
