@@ -1,10 +1,14 @@
 
 import re
 import sys
+import logging
+
 
 import global_defs as g
 import e2bi_patterns
 import legal_systems as ls
+
+
 
 """"
 ----- TERMINOLOGIA ------------------------------
@@ -39,6 +43,10 @@ sul domino delle variabili    per fare questo ho bisogno di salvare:
     valori (controllo specifico per singola variabile),
     se una delle variabili è soddisfatta il controllo è ok
 """
+
+log = g.init_logging()
+
+
 
 
 class PatternVariableValidation(object):
@@ -94,7 +102,8 @@ class PatternVariableValidation(object):
 
     def is_matched(self, variable_part_value):
 
-        # check if one of the eventual constants
+        # check if one of the eventual constants, like in
+        # _{<var1>/CONST1/CONST2}
         if variable_part_value in self._consts:
             return True
 
@@ -103,11 +112,13 @@ class PatternVariableValidation(object):
         for cur_alternative_var  in self._altern_vars_for_single_position:
             if "istem" in cur_alternative_var:
                 if "orgent" in cur_alternative_var:
-                    return variable_part_value in ls.source_systems
+                    if variable_part_value in ls.source_systems:
+                        return True
                 elif "estin" in cur_alternative_var:
-                    return variable_part_value in ls.destination_systems
+                    if variable_part_value in ls.destination_systems:
+                        return True
                 else:
-                    print("ERROR: unrecognized variale")
+                    log.warning("unrecognized variable: <"+cur_alternative_var+">")
 
         return False
 
@@ -164,7 +175,7 @@ class PatternWrapper(object):
         if self._regex_for_mask is not None and len(self._regex_for_mask) > 0:
             self._regex_pattern_compiled = re.compile(self._regex_for_mask)
         else:
-            print("error - exiting")
+            log.error("exiting")
             sys.exit(1)
         pass
 
@@ -217,7 +228,7 @@ class PatternWrapper(object):
                 in_variable = False
 
             if c == " " and not in_variable:
-                print("found space outside variable, pattern: "+e2bipattern)
+                log.warning("found space outside variable, pattern: "+e2bipattern)
                 i = i+1
                 continue
 
@@ -279,7 +290,7 @@ class PatternWrapper(object):
                 var2_validation.add_vars(twovars[1])
 
                 part_validation.add_var(var2_validation)
-                print(part_validation.dumpToStr())
+                log.debug(part_validation.dumpToStr())
                 self._parts_validation.append(part_validation)
 
                 new_parts.append(g.RE_CAPTURE_GROUP_SIMPLE+"2"+g.RE_CAPTURE_GROUP_SIMPLE) # part of our regest
@@ -336,29 +347,29 @@ class PatternWrapper(object):
         captured_vals = []
         captured_groups = re.findall(self._regex_pattern_compiled, s)
         if captured_groups is not None and len(captured_groups) > 0:
-            print("matched pattern {} on string {}".format(self._regex_for_mask, s) )
+            log.debug("matched pattern {} on string {}".format(self._regex_for_mask, s) )
             for capt_grops in captured_groups:
                     captured_vals.append(capt_grops)
-            # print("groups: "+", ".join(captured_vals))
-            # print("matched e2bi pattern vs. string:\n" + self._e2bi_pattern+"\n"+s)
+            log.debug("groups: "+", ".join(captured_vals))
+            log.debug("matched e2bi pattern vs. string:\n" + self._e2bi_pattern+"\n"+s)
             pass
         else:
             return False
 
         # check captured versus variables etc
+        # iteriamo sulle parti del toeken, e, internamente
+        # iteriamo sulle POSIZIONI delle variabili
+        # stessa pos può avere più var: ex. _<var1>/<var2>
+        # qui dovrei andare sulla variabile
         ret = True
         for i, part_val in enumerate(self._parts_validation):
-            print("part["+str(i) + "] "+ part_val.dumpToStr())
-
-            # iteriamo sulle POSIZIONI delle variabili
-            # stessa pos può avere più var: ex. _<var1>/<var2>
-            # qui dovrei andare sulla variabile
+            log.debug("part["+str(i) + "] "+ part_val.dumpToStr())
             ret = True
             for vp_idx, var_position in enumerate(part_val.variables_positions):
                 capt_group_idx_for_var = var_position.var_slot_pos
                 matched_group_val = captured_groups[capt_group_idx_for_var]
                 if not var_position.is_matched(matched_group_val):
-                    print("could not match part: "+part_val.dumpToStr())
+                    log.debug("could not match part: "+part_val.dumpToStr())
                     return False
                 else:
                     pass

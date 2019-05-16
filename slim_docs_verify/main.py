@@ -1,4 +1,6 @@
 
+
+import logging
 import read_clipboard as clbd
 import parser_statements
 import test_sql__statements_01
@@ -7,7 +9,20 @@ import global_defs as g
 import e2bipatterns_checks as pc
 
 
+
+
+def init():
+    """will be filled as code develops"""
+    global log
+    log = g.init_logging()
+
+
+
 def main():
+
+
+    init()
+
 
     #text = clbd.read_clipboard()
     #print("from clpbd read: "+text)
@@ -29,7 +44,7 @@ def main():
 
     # generate pattern checker objects, currently column names
     legal_patterns_list = pc.generate_pattern_wrappers(p)
-    print("generated object that check an edbi pattern against a string")
+    log.debug("generated object that check an edbi pattern against a string")
     for e2bipattern in legal_patterns_list:
         print(e2bipattern.dumpToStr())
 

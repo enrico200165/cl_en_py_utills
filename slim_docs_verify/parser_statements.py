@@ -5,6 +5,8 @@ import global_defs as g
 import tokens_checks as tc
 import sql_preprocess as ih
 
+log = g.init_logging()
+
 
 def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
     """ check if CREATE TABLE is correct """
@@ -26,7 +28,7 @@ def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
 def process_stmt_lines(stmt_type, stmt_lines, table_patterns_checker):
     """ routes statement types to appropriate handler"""
 
-    print("processing stmt: " +stmt_lines[0]+ "\n")
+    log.info("processing stmt: " +stmt_lines[0]+ "\n")
 
     ret = False
     if False: # just for uniform syntax
