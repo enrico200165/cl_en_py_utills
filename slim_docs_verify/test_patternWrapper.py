@@ -98,6 +98,15 @@ class TestPatternWrapper(TestCase):
         return True
 
 
+    def test_parte_opzionale(self):
+        """ se funziona funziona solo in casi semplicissimi"""
+
+        if not self.check("FK[_AA]", "FK"):
+            self.fail()
+        if self.check("FK[_AA]", "FK_BB"):
+            self.fail()
+
+
     # def test_sum_tuple(self):
     #     self.assertEqual(sum((1, 2, 2)), 6, "Should be 6")
 

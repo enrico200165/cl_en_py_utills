@@ -9,8 +9,14 @@ import e2bi_patterns
 import legal_systems as ls
 
 
+"""
+----- DIFETTI CERTI E PROBABILI -----------------
+La gestione delle parti opzionali, ex  T_<var>[_AA/BB/CC] implementata
+di corsa, male ed ad-ho per il caso banale
+se funziona funziona solo per il caso più banale
+implementarla bene è o molto complesso o implica ristrutturare quasi tutto 
+il meccanismo
 
-""""
 ----- TERMINOLOGIA ------------------------------
 qui: in questo file, non necessariamente in altri
 
@@ -204,6 +210,9 @@ class PatternWrapper(object):
 
 
     def split_e2bi_patterm(self, e2bipattern):
+        """ splits a patter into elementary parts, ex "T_AA_<var_BB>"
+        in ["T", "AA", "<var>", "BB"]
+        """
 
         parts = []
         part_is_optional = []
@@ -219,9 +228,16 @@ class PatternWrapper(object):
             # get context
             if c == "[":
                 opzionale = True
-                c = "{"  # attenzione se in futuro controllo per i ver {
+                parts.append(cur_part)
+                cur_part = "{"
+                if i+2 < len(e2bipattern) and e2bipattern[i+1] == "_":
+                    i = i+2 # skip _ dato che già splittato
+                else:
+                    log.error("[ non seguita da _: caso non gestito")
+                continue
             if c == "]":
                 c = "}"  # attenzione se in futuro controllo per il vero }
+                opzionale = False
             if c == "<":
                 in_variable = True
             if c == ">" and in_variable:
