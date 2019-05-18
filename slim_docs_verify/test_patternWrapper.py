@@ -103,12 +103,18 @@ class TestPatternWrapper(TestCase):
 
         if not self.check("FK[_AA]", "FK"):
             self.fail()
-        if self.check("FK[_AA]", "FK_BB"):
+        if not self.check("FK[_AA]", "FK_AA"):
+            self.fail()
+        if not self.check("FK[_AA][_BB]", "FK_AA_BB"):
             self.fail()
 
+        if not self.check("FK[_<sistema sorgente>]", "FK_GDO"):
+            self.fail()
 
-    # def test_sum_tuple(self):
-    #     self.assertEqual(sum((1, 2, 2)), 6, "Should be 6")
+        # attualmente funziona solo con costanti
+        if not self.check("FK[_<sistema sorgente>/<sistema destinazione>]", "FK_FTE"):
+            # self.fail() # attualmente funziona solo con costanti
+            pass
 
 
 # -----------------------------------------------

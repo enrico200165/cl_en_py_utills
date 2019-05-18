@@ -67,8 +67,10 @@ class IDType(Enum):
 
 
 # RE_CAPTURE_GROUP_SIMPLE = "(.*?)" NON FUNZIONA
-RE_CAPTURE_GROUP_SIMPLE = "([^_]*?)"
-RE_VARIABLE_SIMPLE = "<.*?>"
+#RE_CAPTURE_GROUP_SIMPLE = "([^_]*?)"
+RE_CAPTURE_GROUP_SIMPLE = "([^_]+?)"
+
+RE_VARIABLE_SIMPLE = "<.+?>"
 
 legal_patterns_list = None
 
@@ -87,7 +89,7 @@ def init_logging():
     ch.setLevel(logging.INFO)
 
     # create formatter
-    formatter = logging.Formatter('%(asctime)s %(filename)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s %(filename)s,%(lineno)s - %(name)s - %(levelname)s - %(message)s')
 
     # add formatter to ch
     ch.setFormatter(formatter)
