@@ -20,6 +20,25 @@ class TestPatternWrapper(TestCase):
         return p.check_stmt_token(v)
 
 
+    def test_ad_hoc(self):
+        """ testa subito, da soli errori presi altrove"""
+
+
+        patt = 'DBL_BSC_<sistema sorgente>[<_label>]'
+        pw = pc.PatternWrapper(patt)
+        r = pw.generate_regex(patt)
+        if not r == "^DBL_BSC_([^_]+?)(?:_([^_]+?))?$":
+            self.fail()
+
+
+        patt = "TS_MTD_<label>_D"
+        pw = pc.PatternWrapper(patt)
+        r = pw.generate_regex(patt)
+        if not r == "^TS_MTD_([^_]+?)_D$":
+            self.fail()
+
+
+
     def test_split_split_e2bi_patterm_01(self):
 
         patt = "FK[_AA]"
@@ -39,7 +58,19 @@ class TestPatternWrapper(TestCase):
             self.fail()
 
 
-    def test_split_split_e2bi_patterm_01(self):
+    def test_generate_regex_01(self):
+
+        patt = 'FK[_<label>]'
+        pw = pc.PatternWrapper(patt)
+        r = pw.generate_regex(patt)
+
+        patt = 'FK[_ <label>]'
+        pw = pc.PatternWrapper(patt)
+        r = pw.generate_regex(patt)
+
+        patt = 'FK_<nome tabella padre senza prefisso T_>[_ <label>]'
+        pw = pc.PatternWrapper(patt)
+        r = pw.generate_regex(patt)
 
 
         patt = "FK[_AA]"
@@ -53,3 +84,6 @@ class TestPatternWrapper(TestCase):
         patt = 'FK_{<sistema sorgente>/<sistema destinazione>/AA/BBB}'
         pw = pc.PatternWrapper(patt)
         r = pw.generate_regex(patt)
+
+
+

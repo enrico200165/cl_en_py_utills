@@ -5,7 +5,7 @@ import logging
 
 
 import global_defs as g
-import e2bi_patterns
+import e2bi_patterns as e2p
 import legal_systems as ls
 import regex_tiny_utils as ru
 
@@ -94,6 +94,8 @@ class PatternVariableValidation(object):
     def add_vars(self, vars):
         if not isinstance(vars, list):
             vars = [vars]
+        # remove <> from <varname>
+        vars = [ v[1:-1] if re.match(r"<.*?>", v) else v for v in vars]
         self._altern_vars_for_single_position.extend(vars)
 
     @property
@@ -114,18 +116,20 @@ class PatternVariableValidation(object):
         if variable_part_value in self._consts:
             return True
 
-        # check the variables, the variable name tells
-        # which domain to check
+        # possono esserci più variabili su una parte variabile
+        # ex:{<var1>/<var2>} (un solo valore da fornire)
         for cur_alternative_var  in self._altern_vars_for_single_position:
             if "istem" in cur_alternative_var:
                 if "orgent" in cur_alternative_var:
                     if variable_part_value in ls.source_systems:
                         return True
-                elif "estin" in cur_alternative_var:
+                elif "estin" in cur_alternative_var or "istema BI" in cur_alternative_var:
                     if variable_part_value in ls.destination_systems:
                         return True
                 else:
                     log.warning("unrecognized variable: <"+cur_alternative_var+">")
+            elif cur_alternative_var.lower() in ["label"]:
+                return True
 
         return False
 
@@ -144,10 +148,11 @@ class PatternPartValidation(object):
     this is the list of the (var) validations for one part
     """
 
-    def __init__(self, var_validation, part, part_str):
+    def __init__(self, var_validation, part, part_str, is_optional):
         self._var_pos_validations = [var_validation]
         self._part_nr = part # part of the mask
         self._part_str = part_str
+        self._is_optional = is_optional
 
     def add_var(self, var_validation):
         self._var_pos_validations.append(var_validation)
@@ -167,6 +172,23 @@ class PatternPartValidation(object):
         pass
         return self._var_pos_validations
 
+    def part_is_matched(self, i, captured_vals):
+        log.debug("part["+str(i) + "] "+ self.dumpToStr())
+        ret = True
+        # in una posizione possono esserci più variabili o const
+        # ex  T_{<var1><var2>_ZZ}
+        for vp_idx, var_position in enumerate(self._var_pos_validations):
+            # check var/const position
+            if var_position.var_slot_pos > len(captured_vals):
+                log.error("problem with capturing groups")
+                sys.exit(1)
+            matched_group_val = captured_vals[var_position.var_slot_pos]
+            if not var_position.is_matched(matched_group_val):
+                log.debug("could not match part: "+self.dumpToStr())
+                return False
+
+        return True
+
 
 class PatternWrapper(object):
     """ Logic to control if IDs match
@@ -174,13 +196,17 @@ class PatternWrapper(object):
      it is a wrapper around the naming pattern
     """
     def __init__(self, e2bi_pattern):
-        self._e2bi_pattern = e2bi_pattern
+        self._e2bi_pattern = e2bi_pattern.strip()
         self._parts_validation = []
         self._regex_for_mask = None
         self._regex_pattern_compiled = None
         self.generate_regex()
         if self._regex_for_mask is not None and len(self._regex_for_mask) > 0:
-            self._regex_pattern_compiled = re.compile(self._regex_for_mask)
+            try:
+                self._regex_pattern_compiled = re.compile(self._regex_for_mask)
+            except(Exception):
+                log.error("regex non compilabile: \n"+self._regex_for_mask+" from pattern: \n"+self.e2bi_pattern)
+                sys.exit(1)
         else:
             log.error("exiting")
             sys.exit(1)
@@ -195,16 +221,16 @@ class PatternWrapper(object):
 
         # rimuovi _ dentro < _ >
         underscore = ".*<.*_.*>"
-        inside = False
+        inside_var_name = False
         if re.match(underscore, s):
             copy = ""
             for c in s:
                 if c == "<":
-                    inside = True
+                    inside_var_name = True
                 if c == ">":
-                    inside = False
-                if c == "_" and inside:
-                    c = "-"
+                    inside_var_name = False
+                if c == "_" and inside_var_name:
+                    c = ""
                 copy += c
             s = copy
         return s
@@ -234,7 +260,8 @@ class PatternWrapper(object):
                 if i+2 < len(e2bipattern) and e2bipattern[i+1] == "_":
                     i = i+2 # skip _ dato che già splittato
                 else:
-                    log.error("[ non seguita da _: caso non gestito")
+                    log.warning("caso non gestito: [ non seguita da _ in: "+e2bipattern)
+                    i = i+1 # NON funziona con anomali _[aa...] patch a caso qui
                 continue
             if c == "]":
                 c = "}"  # attenzione se in futuro controllo per il vero }
@@ -260,6 +287,7 @@ class PatternWrapper(object):
             cur_part += c
             i = i+1
 
+        cur_part = cur_part.strip()
         parts.append(cur_part)
         part_is_optional.append(opzionale)
 
@@ -277,11 +305,11 @@ class PatternWrapper(object):
             e2bipattern = self._e2bi_pattern
 
         e2bipattern = self.adjust_e2bi_pattern(e2bipattern)
-        (e2bipattern_parts, part_is_optional) = self.split_e2bi_patterm(e2bipattern)
+        (e2bipattern_parts, parts_are_optional) = self.split_e2bi_patterm(e2bipattern)
         new_parts = []
         matching_group_idx = 0 # track matching groups
         prefix = ""
-        for p_idx, part in enumerate(e2bipattern_parts):
+        for p_idx, (part, part_is_optional) in enumerate(zip(e2bipattern_parts,parts_are_optional)):
             if p_idx > 0:
                 prefix = "_"
             if False:
@@ -294,7 +322,7 @@ class PatternWrapper(object):
                 var1_validation = PatternVariableValidation(part, matching_group_idx)
                 matching_group_idx = matching_group_idx+1
                 var1_validation.add_vars(twovars[0])
-                part_validation = PatternPartValidation(var1_validation, p_idx, part)
+                part_validation = PatternPartValidation(var1_validation, p_idx, part, part_is_optional)
 
                 var2_validation = PatternVariableValidation(part, matching_group_idx)
                 matching_group_idx = matching_group_idx+1
@@ -312,7 +340,7 @@ class PatternWrapper(object):
                 matching_group_idx = matching_group_idx+1
                 var_validation.add_vars(part)
                 # add part validation
-                part_validation = PatternPartValidation(var_validation, p_idx, part)
+                part_validation = PatternPartValidation(var_validation, p_idx, part, part_is_optional)
                 self._parts_validation.append(part_validation)
 
                 new_parts.append(prefix+g.RE_CAPTURE_GROUP_SIMPLE) # part of our regest
@@ -343,65 +371,58 @@ class PatternWrapper(object):
                         else:
                             var_validation.add_consts(a)
                     # add part validation
-                    part_validation = PatternPartValidation(var_validation, p_idx, part)
+                    part_validation = PatternPartValidation(var_validation, p_idx, part, part_is_optional)
                     log.debug(part_validation.dumpToStr())
                     self._parts_validation.append(part_validation)
-                    new_parts.append("_"+g.RE_CAPTURE_GROUP_SIMPLE)
+                    if part_is_optional:
+                        new_parts.append(g.RE_CAPTURE_GROUP_UND_IN+"?")
+                    else:
+                        new_parts.append("_"+g.RE_CAPTURE_GROUP_SIMPLE)
             else:
                 new_parts.append(prefix+part)
 
+        new_parts = [p.strip() for p in new_parts] # trim whitespace
         self._regex_for_mask = "^"+"".join(new_parts)+"$"
         return self._regex_for_mask
+
+    def get_matched_groups_val_list(self, token):
+        captured_vals = []
+        captured_groups = re.findall(self._regex_pattern_compiled, token)
+        if captured_groups is not None and len(captured_groups) > 0:
+            log.debug("matched pattern {} on string {}".format(self._regex_for_mask, token))
+            for capture in captured_groups:
+                if (isinstance(capture,tuple)):
+                    for val in capture:
+                        captured_vals.append(val)
+                else:
+                    captured_vals.append(capture)
+        return captured_vals
 
 
     def check_stmt_token(self, token):
 
-
         # chedk if token matches regex
         if not self._regex_pattern_compiled.match(token):
-            log.warning("{} NOT matches {}".format(self._regex_for_mask, token))
+            log.debug("{} NOT matches {}".format(self._regex_for_mask, token))
             return False
 
         # FALL OFF
         log.info("{} matches {}".format(self._regex_for_mask, token))
 
         # match groups and save matched values
-        captured_vals = []
-        captured_groups = re.findall(self._regex_pattern_compiled, token)
-        if captured_groups is not None and len(captured_groups) > 0:
-            log.debug("matched pattern {} on string {}".format(self._regex_for_mask, token))
-            for capt_grops in captured_groups:
-                    captured_vals.append(capt_grops)
-            log.debug("groups: "+", ".join(captured_vals))
-            log.debug("matched e2bi pattern vs. string:\n" + self._e2bi_pattern +"\n" + token)
+        captured_vals = self.get_matched_groups_val_list(token)
 
-        # check captured versus variables etc
-        # iteriamo sulle parti del toeken, e, internamente
-        # iteriamo sulle POSIZIONI delle variabili
-        # stessa pos può avere più var: ex. _<var1>/<var2>
-        # qui dovrei andare sulla variabile
-        ret = True
+        # iteriamo sulle "parti" del token
         for i, part_val in enumerate(self._parts_validation):
-            log.debug("part["+str(i) + "] "+ part_val.dumpToStr())
-            ret = True
-            for vp_idx, var_position in enumerate(part_val.variables_positions):
-                capt_group_idx_for_var = var_position.var_slot_pos
-                if capt_group_idx_for_var > len(captured_groups)-1:
-                    log.error("problem with capturing groups")
-                matched_group_val = captured_groups[capt_group_idx_for_var]
-                if not var_position.is_matched(matched_group_val):
-                    log.debug("could not match part: "+part_val.dumpToStr())
-                    return False
-                else:
-                    pass
+            if not part_val.part_is_matched(i, captured_vals):
+                return False
 
-        # TODO - primo tentativo, controlla che il pattern non match solo parte iniaile
-        # TODO FORSE NON NECESSARIO E DA RIMUOVERE
-        log.warning(self._regex_for_mask)
-        if len(captured_groups[0]) > len(token):
+        if len(captured_vals[0]) > len(token):
             return false
 
-        return ret
+        log.warning("token: {} \nmatched by: {} from pattern: {}".format(token
+            , self._regex_for_mask, self._e2bi_pattern))
+        return True
 
 
     def dumpToStr(self, verbose = None):
@@ -414,29 +435,5 @@ class PatternWrapper(object):
                 s += "\n"+p.dumpToStr()
         return s
 
-
-
-def generate_pattern_wrappers(dummy_single_test = None):
-    """from list of E2BI patterns build the parse objects that contain
-    the objects is needed to check that e2bi pattern against a string
-    """
-    pattern_wrappers_list = []
-    if dummy_single_test is None:
-        mask_lines = e2bi_patterns.patterns_list.split("\n")
-    else:
-        print("working with dummy pattern: "+dummy_single_test)
-        mask_lines = [dummy_single_test]
-    for l in mask_lines:
-        if len(l) == 0:
-            continue
-        p = PatternWrapper(l)
-        # print(p.dumpToStr())
-        pattern_wrappers_list.append(p)
-
-    return pattern_wrappers_list
-
-
-s = "T_STG_sistemasorgente_DT_miatabella"
-# p. checkString(s)
 
 

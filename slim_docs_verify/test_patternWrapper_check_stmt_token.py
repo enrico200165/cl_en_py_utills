@@ -16,9 +16,25 @@ class TestPatternWrapper(TestCase):
 
 
     # --- Utility Functions ---
-    def check(self, p, v ):
+    def check(self, p, token ):
         p = pc.PatternWrapper(p)
-        return p.check_stmt_token(v)
+        return p.check_stmt_token(token)
+
+
+    def test_ad_hoc(self):
+        """ testa subito, da soli errori presi altrove"""
+
+        # if not self.check("DBL_BSC_<sistema sorgente>[<_label>]", "DBL_BSC_GEO"):
+        #     self.fail()
+
+
+
+        if not self.check("DBL_BSC_<sistema sorgente>[<_label>]", "DBL_BSC_GEO_enricolabel"):
+            self.fail()
+
+        if not self.check("TS_MTD_<label>_D","TS_MTD_enricolabel_D"):
+            self.fail()
+
 
 
     # -- test one/single occurrence ---
@@ -62,9 +78,6 @@ class TestPatternWrapper(TestCase):
     def test_check_stmt_token_alternative_one(self):
         """ """
 
-        # pseudo alternative
-        if not self.check("FK_{<sistema sorgente>}", "FK_GDO"):
-            self.fail()
         # consts
         if not self.check("FK_{A}", "FK_A"):
             self.fail()

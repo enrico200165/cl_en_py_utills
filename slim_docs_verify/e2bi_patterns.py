@@ -36,14 +36,29 @@ MV_TDL_{<sistema sorgente>/<sistema BI>/ALL}_{DT/LV/LH/LM/LN/TT/SC}_<label>
 <acronimo tipo dato>_<label>			
 PK_<nome tabella senza prefisso T_>					
 FK_<nome tabella padre senza prefisso T_>[_ <label>]					
-SEQ_MTD_<label>	SEQ_BSC_<label>	
-SEQ_STG_<label>	SEQ_ODS_<label>	SEQ_DMT_<label>	SEQ_TDL_<label>
-FUN_MTD_<label>	FUN_BSC_<label>	
-SEQ_STG_<label>	FUN_ODS_<label>	FUN_DMT_<label>	FUN_TDL_<label>
-PRC_MTD_<label>	PRC_BSC_<label>	
-PRC_STG_<label>	PRC_ODS_<label>	PRC_DMT_<label>	PRC_TDL_<label>
-PKG_MTD_<label>	PKG_BSC_<label>	
-PKG_STG_<label>	PKG_ODS_<label>	PKG_DMT_<label>	
+SEQ_MTD_<label>	
+SEQ_BSC_<label>	
+SEQ_STG_<label>	
+SEQ_ODS_<label>
+SEQ_DMT_<label>
+SEQ_TDL_<label>
+FUN_MTD_<label>
+FUN_BSC_<label>	
+SEQ_STG_<label>
+FUN_ODS_<label>
+FUN_DMT_<label>
+FUN_TDL_<label>
+PRC_MTD_<label>
+PRC_BSC_<label>	
+PRC_STG_<label>
+PRC_ODS_<label>
+PRC_DMT_<label>
+PRC_TDL_<label>
+PKG_MTD_<label>
+PKG_BSC_<label>	
+PKG_STG_<label>
+PKG_ODS_<label>
+PKG_DMT_<label>	
 IDX_<nome tabella senza prefisso T_>_UQ_<nomi colonna/e>
 IDX_<nome tabella senza prefisso T_>_<nomi colonna/e>
 IDX_<nome tabella senza prefisso T_>_UQ

@@ -2,7 +2,6 @@
 
 source_systems = [
     "ALL",
-    "AUD",
     "GEO",
     "CLG",
     "JKL",
@@ -113,3 +112,6 @@ destination_systems = [
     "ASB",
     "P4C"
 ]
+
+
+bi_systems = destination_systems

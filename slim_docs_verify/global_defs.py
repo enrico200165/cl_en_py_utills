@@ -69,35 +69,43 @@ class IDType(Enum):
 # RE_CAPTURE_GROUP_SIMPLE = "(.*?)" NON FUNZIONA
 #RE_CAPTURE_GROUP_SIMPLE = "([^_]*?)"
 RE_CAPTURE_GROUP_SIMPLE = "([^_]+?)"
+RE_CAPTURE_GROUP_UND_IN = "(?:_([^_]+?))"   # underscore inside per [_<var>]
+
+
 
 RE_VARIABLE_SIMPLE = "<.+?>"
 
-legal_patterns_list = None
 
+# --- GLOBAL DATA ----
+
+legal_patterns_list = None
 
 log = None # global logger object
 
 
+
+
 def init_logging():
     # create logger
+    global log
+    if log is not None:
+        return log
 
     logger = logging.getLogger('main')
     logger.setLevel(logging.DEBUG)
 
-    # create console handler and set level to debug
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
+    if len(logger.handlers) <= 0:
+        # create console handler and set level to debug
+        ch = logging.StreamHandler()
+        #ch.setLevel(logging.INFO)
+        ch.setLevel(logging.WARNING)
+        # create formatter
+        formatter = logging.Formatter('%(asctime)s %(filename)s,%(lineno)s - %(name)s - %(levelname)s - %(message)s')
+        # add formatter to ch
+        ch.setFormatter(formatter)
+        # add ch to logger
+        logger.addHandler(ch)
 
-    # create formatter
-    formatter = logging.Formatter('%(asctime)s %(filename)s,%(lineno)s - %(name)s - %(levelname)s - %(message)s')
-
-    # add formatter to ch
-    ch.setFormatter(formatter)
-
-    # add ch to logger
-    logger.addHandler(ch)
-
-    global log
     log = logger
 
     return logger
