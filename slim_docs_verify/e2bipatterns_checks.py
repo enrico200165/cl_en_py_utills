@@ -343,11 +343,19 @@ class PatternWrapper(object):
                 part_validation = PatternPartValidation(var_validation, p_idx, part, part_is_optional)
                 self._parts_validation.append(part_validation)
 
-                new_parts.append(prefix+g.RE_CAPTURE_GROUP_SIMPLE) # part of our regest
+                if (re.match("<etichetta>", part) or re.match("<label>", part)) \
+                        and p_idx == (len(e2bipattern_parts)-1):
+                    new_parts.append(ru.pref_cap_grp(".+", part_is_optional))
+                else:
+                    new_parts.append(prefix+g.RE_CAPTURE_GROUP_SIMPLE) # part of our regest
 
-            elif re.match("\{.*\}", part):
-                part = part[1:-1] # remove {}
+            # sia {<var1/<var2>} che <var1/<var2>
+            elif re.match("\{.*\}", part) or re.match(g.RE_VARIABLE_SIMPLE + "/" + g.RE_VARIABLE_SIMPLE, part):
+
+                if re.match("\{.*\}", part):
+                    part = part[1:-1] # remove {}
                 assert len(part) > 0
+
                 if not re.match(g.RE_VARIABLE_SIMPLE, part): # only constants ?
 
                     # qui facciamo una gestione ad hoc delle alternative
@@ -374,10 +382,16 @@ class PatternWrapper(object):
                     part_validation = PatternPartValidation(var_validation, p_idx, part, part_is_optional)
                     log.debug(part_validation.dumpToStr())
                     self._parts_validation.append(part_validation)
-                    if part_is_optional:
+
+                    # gestione particolare dell'etichetta in ultima posizione
+                    if (re.match("<etichetta>", part) or re.match("<label>", part))\
+                            and p_idx == (len(e2bipattern_parts)-1):
+                            new_parts.append(ru.cap_grp("_.*",part_is_optional))
+                    # normal cases
+                    elif part_is_optional:
                         new_parts.append(g.RE_CAPTURE_GROUP_UND_IN+"?")
                     else:
-                        new_parts.append("_"+g.RE_CAPTURE_GROUP_SIMPLE)
+                        new_parts.append(prefix+g.RE_CAPTURE_GROUP_SIMPLE)
             else:
                 new_parts.append(prefix+part)
 

@@ -24,10 +24,32 @@ class TestPatternWrapper(TestCase):
         """ testa subito, da soli errori presi altrove"""
 
 
+        patt = "T_DMT_<sistema sorgente>/<sistema BI>_{DM/FT/FA/LM}_<label>"
+        pw = pc.PatternWrapper(patt)
+        r = pw.generate_regex(patt)
+        if not r == "^T_DMT_([^_]+?)(?:_DM|_FT|_FA|_LM)_(.+)$":
+            self.fail()
+
+
+        # NB. non sarebbe corretta
+        patt = 'DBL[<_label>]'
+        pw = pc.PatternWrapper(patt)
+        r = pw.generate_regex(patt)
+        if not r == "^DBL(_.*)?$":
+            self.fail()
+
+        patt = 'DBL[_<_label>]'
+        pw = pc.PatternWrapper(patt)
+        r = pw.generate_regex(patt)
+        if not r == "^DBL(_.*)?$":
+            self.fail()
+
+
+
         patt = 'DBL_BSC_<sistema sorgente>[<_label>]'
         pw = pc.PatternWrapper(patt)
         r = pw.generate_regex(patt)
-        if not r == "^DBL_BSC_([^_]+?)(?:_([^_]+?))?$":
+        if not r == "^DBL_BSC_([^_]+?)(_.*)?$":
             self.fail()
 
 

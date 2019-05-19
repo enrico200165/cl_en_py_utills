@@ -1,3 +1,4 @@
+import re
 
 import global_defs as g
 
@@ -37,6 +38,9 @@ class TableNamesChecker(object):
         self._patterns = self.generate_pattern_wrappers(e2bi_patterns_list)
 
     def check_table_name(self, table_name):
+
+        if re.match('".*"', table_name):
+            table_name = table_name[1:-1]
 
         # check if it is matched by one of the patterns
         # TODO now patters are not only for tables, check if must be changed

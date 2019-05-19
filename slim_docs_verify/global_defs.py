@@ -73,7 +73,9 @@ RE_CAPTURE_GROUP_UND_IN = "(?:_([^_]+?))"   # underscore inside per [_<var>]
 
 
 
-RE_VARIABLE_SIMPLE = "<.+?>"
+#RE_VARIABLE_SIMPLE = "<.+?>"
+RE_VARIABLE_SIMPLE = "<[^>]+>"
+
 
 
 # --- GLOBAL DATA ----

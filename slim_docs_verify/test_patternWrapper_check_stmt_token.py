@@ -27,7 +27,10 @@ class TestPatternWrapper(TestCase):
         # if not self.check("DBL_BSC_<sistema sorgente>[<_label>]", "DBL_BSC_GEO"):
         #     self.fail()
 
-
+        # T_DMT_<sistema sorgente>/<sistema BI>_{DM/FT/FA/LM}_<label>
+        e2bi_pattern = "T_DMT_<sistema sorgente>/<sistema BI>_{DM/FT/FA/LM}_<label>"
+        if not self.check(e2bi_pattern, "T_DMT_P4C_DM_ANAG_PARTNER"):
+            self.fail()
 
         if not self.check("DBL_BSC_<sistema sorgente>[<_label>]", "DBL_BSC_GEO_enricolabel"):
             self.fail()

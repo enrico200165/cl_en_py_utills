@@ -215,225 +215,84 @@ class TestCheck_table_name(TestCase):
         # TS_STG_<sistema BI>_D
         if not self.check("TS_STG_P4C_D"):
             self.fail()
-        if self.check("TS_STG_GEO_D"):
-            self.fail()
+
+
         # TS_STG_<sistema BI>_<label>_D
         if not self.check("TS_STG_P4C_enricolabel_D"):
             self.fail()
-        if self.check("TS_STG_GEO_enricolabel_D"):
+        if not self.check("TS_STG_P4C_D"):
             self.fail()
 
-
-
-        #
-        # TS_STG_<sistema sorgente>_I
-        # TS_STG_<sistema sorgente>_<label>_I
-        #
-        # TS_STG_<sistema BI>_I
-        # TS_STG_<sistema BI>_<label>_I
-
-
-        if not self.check("TS_STG_AUD_enricolabel_D"):
+        # TS_ODS
+        if not self.check("TS_ODS_GEO_enricolabel_D"):
             self.fail()
-
-
-        if not self.check("TS_STG_AUD_enricolabel_I"):
-            self.fail()
-        if not self.check("TS_STG_AUD_enricolabel_I"):
-            self.fail()
-        if not self.check("TS_STG_AUD_enricolabel_I"):
-            self.fail()
-        if not self.check("TS_STG_AUD_enricolabel_I"):
-            self.fail()
-
-
-        if not self.check("TS_ODS_AUD_enricolabel_D"):
-            self.fail()
-        if not self.check("TS_ODS_AUD_enricolabel_D"):
-            self.fail()
-        if not self.check("TS_ODS_AUD_enricolabel_D"):
-            self.fail()
-        if not self.check("TS_ODS_AUD_enricolabel_D"):
-            self.fail()
-
-
-        if not self.check("TS_ODS_AUD_enricolabel_I"):
+        if not self.check("TS_ODS_GEO_D"):
             self.fail()
         if not self.check("TS_ODS_AUD_enricolabel_I"):
             self.fail()
-        if not self.check("TS_ODS_AUD_enricolabel_I"):
+        if not self.check("TS_ODS_AUD_I"):
             self.fail()
-        if not self.check("TS_ODS_AUD_enricolabel_I"):
+
+        if not self.check("DBL_BSC_GEO_enricolabel"):
+            self.fail()
+        if not self.check("DBL_BSC_AUD_enricolabel"):
+            self.fail()
+        if not self.check("DBL_BSC_AUD_enricolabel"):
+            self.fail()
+        if not self.check("DBL_BSC_AUD_enricolabel"):
             self.fail()
 
 
-        if not self.check("DBL_BSC_AUD[<_enricolabel>]"):
+        if not self.check("DBL_STG_AUD_enricolabel"):
             self.fail()
-        if not self.check("DBL_BSC_AUD[<_enricolabel>]"):
+        if not self.check("DBL_STG_AUD_enricolabel"):
             self.fail()
-        if not self.check("DBL_BSC_AUD[<_enricolabel>]"):
+        if not self.check("DBL_STG_AUD_enricolabel"):
             self.fail()
-        if not self.check("DBL_BSC_AUD[<_enricolabel>]"):
-            self.fail()
-
-
-        if not self.check("DBL_STG_AUD[<_enricolabel>]"):
-            self.fail()
-        if not self.check("DBL_STG_AUD[<_enricolabel>]"):
-            self.fail()
-        if not self.check("DBL_STG_AUD[<_enricolabel>]"):
-            self.fail()
-        if not self.check("DBL_STG_AUD[<_enricolabel>]"):
+        if not self.check("DBL_STG_AUD_enricolabel"):
             self.fail()
 
 
-        if not self.check("DBL_ODS_AUD[<_enricolabel>]"):
+        if not self.check("DBL_ODS_AUD_enricolabel"):
             self.fail()
-        if not self.check("DBL_ODS_AUD[<_enricolabel>]"):
+        if not self.check("DBL_ODS_AUD_enricolabel"):
             self.fail()
-        if not self.check("DBL_ODS_AUD[<_enricolabel>]"):
+        if not self.check("DBL_ODS_AUD_enricolabel"):
             self.fail()
-        if not self.check("DBL_ODS_AUD[<_enricolabel>]"):
-            self.fail()
-
-
-        if not self.check("DBL_DMT_AUD[<_enricolabel>]"):
-            self.fail()
-        if not self.check("DBL_DMT_AUD[<_enricolabel>]"):
-            self.fail()
-        if not self.check("DBL_DMT_AUD[<_enricolabel>]"):
-            self.fail()
-        if not self.check("DBL_DMT_AUD[<_enricolabel>]"):
+        if not self.check("DBL_ODS_AUD_enricolabel"):
             self.fail()
 
 
-        if not self.check("QTA_enricolabel"):
+        if not self.check("DBL_DMT_AUD_enricolabel"):
             self.fail()
-        if not self.check("QTA_enricolabel"):
+        if not self.check("DBL_DMT_AUD_enricolabel"):
             self.fail()
-        if not self.check("QTA_enricolabel"):
+        if not self.check("DBL_DMT_AUD_enricolabel"):
             self.fail()
-        if not self.check("QTA_enricolabel"):
-            self.fail()
-
-
-        if not self.check("SYN_MTD_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_MTD_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_MTD_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_MTD_R_<nome oggetto con prefisso>"):
+        if not self.check("DBL_DMT_AUD_enricolabel"):
             self.fail()
 
 
-        if not self.check("SYN_BSC_R_<nome oggetto con prefisso>"):
+        if not self.check("SEQ_MTD_enricolabel"):
             self.fail()
-        if not self.check("SYN_BSC_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_BSC_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_BSC_R_<nome oggetto con prefisso>"):
+        if not self.check("SEQ_BSC_enricolabel"):
             self.fail()
 
 
-        if not self.check("SYN_STG_R_<nome oggetto con prefisso>"):
+        if not self.check("FUN_MTD_enricolabel"):
             self.fail()
-        if not self.check("SYN_STG_R_<nome oggetto con prefisso>"):
+        if not self.check("FUN_BSC_enricolabel"):
             self.fail()
-        if not self.check("SYN_STG_R_<nome oggetto con prefisso>"):
+
+        if not self.check("PRC_MTD_enricolabel"):
             self.fail()
-        if not self.check("SYN_STG_R_<nome oggetto con prefisso>"):
+        if not self.check("PRC_BSC_enricolabel"):
             self.fail()
 
 
-        if not self.check("SYN_ODS_R_<nome oggetto con prefisso>"):
+        if not self.check("PKG_MTD_enricolabel"):
             self.fail()
-        if not self.check("SYN_ODS_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_ODS_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_ODS_R_<nome oggetto con prefisso>"):
-            self.fail()
-
-
-        if not self.check("SYN_DMT_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_DMT_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_DMT_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_DMT_R_<nome oggetto con prefisso>"):
-            self.fail()
-
-
-        if not self.check("SYN_DMT_L_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_DMT_L_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_DMT_L_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_DMT_L_<nome oggetto con prefisso>"):
-            self.fail()
-
-
-        if not self.check("SYN_TDL_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_TDL_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_TDL_R_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_TDL_R_<nome oggetto con prefisso>"):
-            self.fail()
-
-
-        if not self.check("SYN_TDL_L_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_TDL_L_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_TDL_L_<nome oggetto con prefisso>"):
-            self.fail()
-        if not self.check("SYN_TDL_L_<nome oggetto con prefisso>"):
-            self.fail()
-
-
-        if not self.check("SEQ_MTD_enricolabel    SEQ_BSC_enricolabel"):
-            self.fail()
-        if not self.check("SEQ_MTD_enricolabel    SEQ_BSC_enricolabel"):
-            self.fail()
-        if not self.check("SEQ_MTD_enricolabel    SEQ_BSC_enricolabel"):
-            self.fail()
-        if not self.check("SEQ_MTD_enricolabel    SEQ_BSC_enricolabel"):
-            self.fail()
-
-
-        if not self.check("FUN_MTD_enricolabel    FUN_BSC_enricolabel"):
-            self.fail()
-        if not self.check("FUN_MTD_enricolabel    FUN_BSC_enricolabel"):
-            self.fail()
-        if not self.check("FUN_MTD_enricolabel    FUN_BSC_enricolabel"):
-            self.fail()
-        if not self.check("FUN_MTD_enricolabel    FUN_BSC_enricolabel"):
-            self.fail()
-
-
-        if not self.check("PRC_MTD_enricolabel    PRC_BSC_enricolabel"):
-            self.fail()
-        if not self.check("PRC_MTD_enricolabel    PRC_BSC_enricolabel"):
-            self.fail()
-        if not self.check("PRC_MTD_enricolabel    PRC_BSC_enricolabel"):
-            self.fail()
-        if not self.check("PRC_MTD_enricolabel    PRC_BSC_enricolabel"):
-            self.fail()
-
-
-        if not self.check("PKG_MTD_enricolabel    PKG_BSC_enricolabel"):
-            self.fail()
-        if not self.check("PKG_MTD_enricolabel    PKG_BSC_enricolabel"):
-            self.fail()
-        if not self.check("PKG_MTD_enricolabel    PKG_BSC_enricolabel"):
-            self.fail()
-        if not self.check("PKG_MTD_enricolabel    PKG_BSC_enricolabel"):
+        if not self.check("PKG_BSC_enricolabel"):
             self.fail()
 
 
@@ -736,7 +595,6 @@ class TestCheck_table_name(TestCase):
         if not self.check("SEQ_STG_enricolabel    SEQ_ODS_enricolabel    SEQ_DMT_enricolabel    SEQ_TDL_enricolabel"):
             self.fail()
 
-
         if not self.check("SEQ_STG_enricolabel    FUN_ODS_enricolabel    FUN_DMT_enricolabel    FUN_TDL_enricolabel"):
             self.fail()
         if not self.check("SEQ_STG_enricolabel    FUN_ODS_enricolabel    FUN_DMT_enricolabel    FUN_TDL_enricolabel"):
@@ -745,7 +603,6 @@ class TestCheck_table_name(TestCase):
             self.fail()
         if not self.check("SEQ_STG_enricolabel    FUN_ODS_enricolabel    FUN_DMT_enricolabel    FUN_TDL_enricolabel"):
             self.fail()
-
 
         if not self.check("PRC_STG_enricolabel    PRC_ODS_enricolabel    PRC_DMT_enricolabel    PRC_TDL_enricolabel"):
             self.fail()
@@ -857,4 +714,82 @@ class TestCheck_table_name(TestCase):
             self.fail()
 
 
+        if not self.check("SYN_MTD_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_MTD_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_MTD_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_MTD_R_<nome oggetto con prefisso>"):
+            self.fail()
+
+
+        if not self.check("SYN_BSC_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_BSC_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_BSC_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_BSC_R_<nome oggetto con prefisso>"):
+            self.fail()
+
+
+        if not self.check("SYN_STG_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_STG_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_STG_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_STG_R_<nome oggetto con prefisso>"):
+            self.fail()
+
+
+        if not self.check("SYN_ODS_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_ODS_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_ODS_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_ODS_R_<nome oggetto con prefisso>"):
+            self.fail()
+
+
+        if not self.check("SYN_DMT_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_DMT_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_DMT_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_DMT_R_<nome oggetto con prefisso>"):
+            self.fail()
+
+
+        if not self.check("SYN_DMT_L_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_DMT_L_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_DMT_L_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_DMT_L_<nome oggetto con prefisso>"):
+            self.fail()
+
+
+        if not self.check("SYN_TDL_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_TDL_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_TDL_R_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_TDL_R_<nome oggetto con prefisso>"):
+            self.fail()
+
+
+        if not self.check("SYN_TDL_L_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_TDL_L_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_TDL_L_<nome oggetto con prefisso>"):
+            self.fail()
+        if not self.check("SYN_TDL_L_<nome oggetto con prefisso>"):
+            self.fail()
 

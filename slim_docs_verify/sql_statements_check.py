@@ -28,7 +28,7 @@ def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
     first_stmt_line = stmt_lines_list[cur_line_nr]
 
     table_name = find_table_name(first_stmt_line.split())
-    if not tc.check_table_name(table_name, table_patterns_checker):
+    if not table_patterns_checker.check_table_name(table_name):
         log.warning("table name seems not correct: "+table_name)
         nr_errors_found = nr_errors_found + 1
 
