@@ -75,7 +75,9 @@ RE_CAPTURE_GROUP_UND_IN = "(?:_([^_]+?))"   # underscore inside per [_<var>]
 
 #RE_VARIABLE_SIMPLE = "<.+?>"
 RE_VARIABLE_SIMPLE = "<[^>]+>"
+RE_TOKEN_ID = "([A-Za-z0-9_]+)" # table names columns names Etc
 
+SEP = "_"
 
 
 # --- GLOBAL DATA ----

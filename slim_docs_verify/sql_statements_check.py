@@ -5,47 +5,10 @@ import global_defs as g
 import tokens_checks as tc
 import sql_preprocess as ih
 
+import sql_create_table_check as sqlcr
+
 log = g.init_logging()
 
-
-def find_table_name(tokens):
-    """True if it COULD be, may also not be """
-    for token in tokens:
-        if "_" in token:
-            return token
-
-    return False
-
-
-def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
-    """ check if CREATE TABLE is correct """
-
-    nr_errors_found = 0 # we try to count and go on
-
-    cur_line_nr = 0
-    nr_lines = len(stmt_lines_list)
-
-    first_stmt_line = stmt_lines_list[cur_line_nr]
-
-    table_name = find_table_name(first_stmt_line.split())
-    if not table_patterns_checker.check_table_name(table_name):
-        log.warning("table name seems not correct: "+table_name)
-        nr_errors_found = nr_errors_found + 1
-
-    if not cur_line_nr+1 < nr_lines:
-        log.warning("incomplete create statement")
-        return False
-    cur_line_nr = cur_line_nr+1
-    if not stmt_lines_list[cur_line_nr].strip() == "(":
-        log.warning("line after create table does not contain (:\n"+cur_line_nr[cur_line_nr])
-
-    # now there should be the values
-    for line in stmt_lines_list[cur_line_nr:]:
-        log.debug(line)
-
-
-
-    return nr_errors_found > 0
 
 
 def process_stmt_lines(stmt_type, stmt_lines, table_patterns_checker):
@@ -57,7 +20,7 @@ def process_stmt_lines(stmt_type, stmt_lines, table_patterns_checker):
     if False: # just for uniform syntax
         pass
     elif stmt_type == g.SQLStmtType.CREATE_TABLE:
-        ret = check_sql_create_stmt(stmt_lines, table_patterns_checker)
+        ret = sqlcr.check_sql_create_stmt(stmt_lines, table_patterns_checker)
     elif stmt_type == g.SQLStmtType.ALTER_TABLE:
         log.info("Warn: statement not yet supported: "+stmt_lines[0])
         ret = False

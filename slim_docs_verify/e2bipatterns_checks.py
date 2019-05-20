@@ -216,6 +216,11 @@ class PatternWrapper(object):
     def e2bi_pattern(self):
         return self._e2bi_pattern
 
+    @property
+    def regex(self):
+        return self._regex_for_mask
+
+
     def adjust_e2bi_pattern(self, s):
         """ eventual changes/adjustments to make subsequen partsing easier """
 
@@ -257,10 +262,10 @@ class PatternWrapper(object):
                 part_is_optional.append(opzionale)
                 opzionale = True
                 cur_part = "{"
-                if i+2 < len(e2bipattern) and e2bipattern[i+1] == "_":
+                if i+2 < len(e2bipattern) and e2bipattern[i+1] == g.SEP:
                     i = i+2 # skip _ dato che già splittato
                 else:
-                    log.warning("caso non gestito: [ non seguita da _ in: "+e2bipattern)
+                    log.info("caso non gestito: [ non seguita da _ in: "+e2bipattern)
                     i = i+1 # NON funziona con anomali _[aa...] patch a caso qui
                 continue
             if c == "]":
@@ -306,6 +311,7 @@ class PatternWrapper(object):
 
         e2bipattern = self.adjust_e2bi_pattern(e2bipattern)
         (e2bipattern_parts, parts_are_optional) = self.split_e2bi_patterm(e2bipattern)
+
         new_parts = []
         matching_group_idx = 0 # track matching groups
         prefix = ""
@@ -362,7 +368,7 @@ class PatternWrapper(object):
                     alternatives = part.split("/")
                     tmp = ""
                     for a in alternatives:
-                        tmp += "_"+a+"|"
+                        tmp += prefix + a + "|"
                     tmp = tmp[:-1]
                     tmp = ru.non_cap_grp(tmp, part_is_optional)
                     new_parts.append(tmp)
@@ -434,8 +440,6 @@ class PatternWrapper(object):
         if len(captured_vals[0]) > len(token):
             return false
 
-        log.warning("token: {} \nmatched by: {} from pattern: {}".format(token
-            , self._regex_for_mask, self._e2bi_pattern))
         return True
 
 
