@@ -3,8 +3,8 @@ import sys
 import re
 
 import global_defs as g
-import tokens_checks as tc
-import sql_preprocess as ih
+
+import regex_tiny_utils as rtu
 
 log = g.init_logging()
 
@@ -13,8 +13,8 @@ class ColumnInfo(object):
     def __init__(self):
         self._line = None
         self._name = None
-        self._size_min = None
-        self._size_max = None
+        self._val1 = None
+        self._val2 = None
         self._default = None
         self._nullable = None
         self._key_type = None # 0 not known , 1 = PK, 2 FK
@@ -24,7 +24,7 @@ class ColumnInfo(object):
         s = ""
         s += "name = " +self._name
         s += " type = "+self._type
-        s += " size = ("+str(self._size_min)+", "+str(self._size_max)
+        s += " size = (" + str(self._val1) + ", " + str(self._val2)
         return s
 
 
@@ -51,13 +51,11 @@ def parse_column_decl(line):
     col_info._line = line
 
     tokens = line.split()
-
     if len(tokens) < 2:
         log.error("less than 3 tokens found in line: \n"+line)
         sys.exit()
 
-    ret = True
-    cur_idx = 0
+    (nullable, ret, cur_idx) = (True, True, 0)
 
     col_info._name = tokens[cur_idx ]
 
@@ -67,6 +65,9 @@ def parse_column_decl(line):
 
     # --- type ----------------------------------
     cur_idx = cur_idx+1
+
+    val1 = rtu.Val1Wrapper()
+    val2 = rtu.Val2Wrapper()
 
     temp_type = ""
     token_type = tokens[cur_idx]
@@ -90,16 +91,12 @@ def parse_column_decl(line):
     elif tokens[cur_idx].lower() in ["bigint", "byteint","timestamp"]:
         temp_type += tokens[cur_idx]
         log.info("identified type: "+tokens[cur_idx])
+    elif rtu.dbtype_with_2size("numeric", tokens[cur_idx].lower(), val2):
+        (col_info._val1, col_info._val2)  = (val2.val1, val2.val2)
+        temp_type += "numeric"
     else:
-        captured_groups = re.findall("numeric\(([0-9]+\)) *, *\(([0-9]+)\)",tokens[cur_idx].lower())
-        if captured_groups is not None:
-            assert(len(captured_groups) == 1)
-            col_info._size_min = int(captured_groups[0])
-            col_info._size_max = int(captured_groups[1])
-            temp_type += "numeric"
-        else:
-            log.error("unmanaged type: " + tokens[cur_idx] + " in " +line)
-            return (False, None)
+        log.error("unmanaged type: " + tokens[cur_idx] + " in " +line)
+        return (False, None)
 
     col_info._type = temp_type
 
@@ -108,7 +105,6 @@ def parse_column_decl(line):
         return (True, col_info)
     else:
         cur_idx = cur_idx+1
-    nullable = True
     if tokens[cur_idx].lower() == "not":
         nullable = False
         if tokens[cur_idx+1].lower() != "null":
