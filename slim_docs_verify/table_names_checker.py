@@ -17,7 +17,6 @@ class TableNamesChecker(object):
         self._last_matched_pattern_wrapper = None
         self._last_matched_token = None
 
-
     def generate_pattern_wrappers(self, ad_hoc_test = None):
         """from list of E2BI patterns build the parse objects that contain
         the objects is needed to check that e2bi pattern against a string
@@ -29,7 +28,8 @@ class TableNamesChecker(object):
             if isinstance(ad_hoc_test , list):
                 mask_lines = ad_hoc_test
             else:
-                log.info("working with dummy pattern: " + ad_hoc_test)
+                log.debug("working with dummy pattern, length {} first chars: \n{} ...".format(
+                    len(ad_hoc_test), ad_hoc_test[:79]))
                 mask_lines = ad_hoc_test.split("\n")
 
         mask_lines = [l.strip() for l in mask_lines]

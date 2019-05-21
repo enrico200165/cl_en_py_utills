@@ -9,6 +9,25 @@ import sql_preprocess as ih
 log = g.init_logging()
 
 
+class ColumnInfo(object):
+    def __init__(self):
+        self._line = None
+        self._name = None
+        self._size_min = None
+        self._size_max = None
+        self._default = None
+        self._nullable = None
+        self._key_type = None # 0 not known , 1 = PK, 2 FK
+        self._type = None
+
+    def dumpToStr(self):
+        s = ""
+        s += "name = " +self._name
+        s += " type = "+self._type
+        s += " size = ("+str(self._size_min)+", "+str(self._size_max)
+        return s
+
+
 def find_table_name(tokens):
     """True if it COULD be, may also not be """
     for token in tokens:
@@ -18,23 +37,38 @@ def find_table_name(tokens):
     return False
 
 
+
+
 def parse_column_decl(line):
+    """ parse column line in DDL and nothing more
+    semantics check will be done in other function using
+    as input the info parsed here
+    return a tuple with (OK, ColumnInfo Object)
+    """
+    col_info = ColumnInfo()
 
     line = line[:-1].strip() if line[-1:] == "," else line.strip()
+    col_info._line = line
 
     tokens = line.split()
 
-    if len(tokens) < 3:
-        log.error("")
+    if len(tokens) < 2:
+        log.error("less than 3 tokens found in line: \n"+line)
         sys.exit()
 
+    ret = True
     cur_idx = 0
-    col_name = tokens[cur_idx ]
 
+    col_info._name = tokens[cur_idx ]
 
-    # --- type ---
+    # solo per debug casereccio
+    if col_info._name == "PK_P4C_PARTNER":
+        log.warning("")
+
+    # --- type ----------------------------------
     cur_idx = cur_idx+1
 
+    temp_type = ""
     token_type = tokens[cur_idx]
 
     if tokens[cur_idx].lower() == "national":
@@ -42,34 +76,64 @@ def parse_column_decl(line):
             log.error("national not followed by character")
             sys.exit(1)
         cur_idx = cur_idx+1
+        temp_type = "national_"
 
     # national character varying(N)
     if tokens[cur_idx] == "character":
+        temp_type += "character"
         cur_idx = cur_idx+1
         captured_groups = re.findall("varying\(([0-9]+)\)",tokens[cur_idx])
         if captured_groups is not None:
             assert(len(captured_groups) == 1)
-            type_size = int(captured_groups[0])
-    elif tokens[cur_idx].lower() in ["bigint" , "byteint","timestamp"]:
+            col_info._size = int(captured_groups[0])
+            temp_type += "_varying"
+    elif tokens[cur_idx].lower() in ["bigint", "byteint","timestamp"]:
+        temp_type += tokens[cur_idx]
         log.info("identified type: "+tokens[cur_idx])
     else:
-        log.error("unmanaged type: " + tokens[cur_idx] + " in " +line)
+        captured_groups = re.findall("numeric\(([0-9]+\)) *, *\(([0-9]+)\)",tokens[cur_idx].lower())
+        if captured_groups is not None:
+            assert(len(captured_groups) == 1)
+            col_info._size_min = int(captured_groups[0])
+            col_info._size_max = int(captured_groups[1])
+            temp_type += "numeric"
+        else:
+            log.error("unmanaged type: " + tokens[cur_idx] + " in " +line)
+            return (False, None)
 
+    col_info._type = temp_type
 
-    # --- NOT NULL
-    cur_idx = cur_idx+1
+    # --- NOT NULL ------------------------------
+    if cur_idx >= len(tokens)-1:
+        return (True, col_info)
+    else:
+        cur_idx = cur_idx+1
     nullable = True
     if tokens[cur_idx].lower() == "not":
-        nullable = True
+        nullable = False
         if tokens[cur_idx+1].lower() != "null":
             log.error('"not" not followed by null in: '+line)
-            sys.exit(1)
-        cur_idx = cur_idx+1
+            return (False, None)
+        if cur_idx >= len(tokens)-1:
+            return (True, col_info)
+        else:
+            cur_idx = cur_idx+1
 
     if tokens[cur_idx].lower() == "null":
         pass
-    log.warning(line)
-    log.warning(line)
+
+    col_info._nullable = nullable
+
+    # --- default -------------------------------
+    if cur_idx >= len(tokens)-1:
+        return (True, col_info)
+    else:
+        cur_idx = cur_idx+1
+
+    if tokens[cur_idx].lower() == "default":
+        log.warning("default not implementato")
+
+    return (True, col_info)
 
 
 def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
@@ -95,13 +159,21 @@ def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
         log.warning("line after create table does not contain (:\n"+cur_line_nr[cur_line_nr])
 
     # now there should be the values
+    ok = True
     for line in stmt_lines_list[cur_line_nr+1:]:
         # fragile way to detect end of column names
         # works only if code is formatted as requested
         if re.match("[\w]*\)[\w]*$", line):
             break
-        parse_column_decl(line)
-        log.warning(line)
+        try:
+            (ok, type_info) = parse_column_decl(line)
+        except Exception as e:
+            log.error("exiting: Exception: "+str(e)+"\nin line:\n"+line)
+            sys.exit(1)
+        if ok:
+            log.debug(type_info.dumpToStr())
+        else:
+            log.error("failed to parse line:\n" + line)
 
     return nr_errors_found > 0
 

@@ -104,11 +104,20 @@ def init_logging():
         #ch.setLevel(logging.INFO)
         ch.setLevel(logging.WARNING)
         # create formatter
-        formatter = logging.Formatter('%(asctime)s %(filename)s,%(lineno)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(filename)s,%(lineno)s - %(name)s - %(levelname)s - %(message)s')
         # add formatter to ch
         ch.setFormatter(formatter)
         # add ch to logger
         logger.addHandler(ch)
+
+        fh = logging.FileHandler("slim_naming.log")
+        fh.setLevel(logging.DEBUG)
+        # create formatter
+        formatter = logging.Formatter('%(asctime)s %(filename)s,%(lineno)s - %(name)s - %(levelname)s - %(message)s')
+        # add formatter to ch
+        fh.setFormatter(formatter)
+        # add ch to logger
+        logger.addHandler(fh)
 
     log = logger
 
