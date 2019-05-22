@@ -3,6 +3,8 @@
 import logging
 import read_clipboard as clbd
 import sql_statements_check as sc
+
+# real life statements for test
 import test_sql_statements_01 as t01
 
 import global_defs as g

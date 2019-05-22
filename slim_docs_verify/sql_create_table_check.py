@@ -1,12 +1,27 @@
 
 import sys
 import re
-
+import inspect
+import traceback
 import global_defs as g
 
 import regex_tiny_utils as rtu
 
 log = g.init_logging()
+
+
+numeric_types_0par_keywords = ["bigint", "byteint"]
+numeric_types_1par_keywords = ["numeric"]
+numeric_types_2par_keywords = ["numeric"]
+
+char_types_0par_keywords = []
+char_types_1par_keywords = ["character", "varchar"]
+char_types_2par_keywords = []
+
+time_types_0par_keywords = ["timestamp"]
+time_types_1par_keywords = []
+time_types_2par_keywords = []
+
 
 
 class ColumnInfo(object):
@@ -21,10 +36,15 @@ class ColumnInfo(object):
         self._type = None
 
     def dumpToStr(self):
-        s = ""
-        s += "name = " +self._name
-        s += " type = "+self._type
-        s += " size = (" + str(self._val1) + ", " + str(self._val2)
+        s = "Column info for line:\n"
+        s += "Line: "+"  ".join(self._line.split()) + "\n"
+        s += "name=" +self._name
+        s += " type="+self._type
+        s += " size(s)=(" + str(self._val1) + ", " + str(self._val2) +")"
+        s += " default="+str(self._default)
+        s += " nullable="+str(self._nullable)
+        s += " key_type="+str(self._key_type)
+
         return s
 
 
@@ -63,14 +83,12 @@ def parse_column_decl(line):
     if col_info._name == "PK_P4C_PARTNER":
         log.warning("")
 
-    # --- type ----------------------------------
+    # --- type NB here only data estraction, no validation --
     cur_idx = cur_idx+1
 
-    val1 = rtu.Val1Wrapper()
     val2 = rtu.Val2Wrapper()
 
     temp_type = ""
-    token_type = tokens[cur_idx]
 
     if tokens[cur_idx].lower() == "national":
         if tokens[cur_idx+1].lower() != "character":
@@ -88,12 +106,46 @@ def parse_column_decl(line):
             assert(len(captured_groups) == 1)
             col_info._size = int(captured_groups[0])
             temp_type += "_varying"
-    elif tokens[cur_idx].lower() in ["bigint", "byteint","timestamp"]:
+
+    # =============== NUMERIC ===================
+    # numeric without esplicit size
+    elif tokens[cur_idx].lower() in numeric_types_0par_keywords:
         temp_type += tokens[cur_idx]
         log.info("identified type: "+tokens[cur_idx])
-    elif rtu.dbtype_with_2size("numeric", tokens[cur_idx].lower(), val2):
+    # numeric types with 1 size parameter (ANY ?)
+    elif rtu.matches_dbtypes_with_1size(numeric_types_1par_keywords,
+                tokens[cur_idx].lower(), val2):
+        col_info._val1 = val2.val
+        temp_type += val2.strval
+    # numeric types with 2 size parameter (ANY ?)
+    elif rtu.matches_dbtypes_with_2size(numeric_types_2par_keywords,
+                                         tokens[cur_idx].lower(), val2):
         (col_info._val1, col_info._val2)  = (val2.val1, val2.val2)
-        temp_type += "numeric"
+        temp_type += val2.strval
+
+# =============== CHARACTER ===================
+    # numeric without esplicit size
+    elif tokens[cur_idx].lower() in char_types_0par_keywords:
+        temp_type += tokens[cur_idx]
+        log.info("identified type: "+tokens[cur_idx])
+        temp_type = tokens[cur_idx]
+    # numeric types with 1 size parameter (ANY ?)
+    elif rtu.matches_dbtypes_with_1size(char_types_1par_keywords,
+                                        tokens[cur_idx].lower(), val2):
+        col_info._val1 = val2.val
+        temp_type += val2.strval
+    # numeric types with 2 size parameter (ANY ?)
+    elif rtu.matches_dbtypes_with_2size(char_types_2par_keywords,
+                                        tokens[cur_idx].lower(), val2):
+        (col_info._val1, col_info._val2)  = (val2.val1, val2.val2)
+        temp_type += val2.strval
+
+    # =============== TIME ===================
+    # time without esplicit size
+    elif tokens[cur_idx].lower() in time_types_0par_keywords:
+        temp_type += tokens[cur_idx]
+        log.info("identified type: "+tokens[cur_idx])
+
     else:
         log.error("unmanaged type: " + tokens[cur_idx] + " in " +line)
         return (False, None)
@@ -127,7 +179,7 @@ def parse_column_decl(line):
         cur_idx = cur_idx+1
 
     if tokens[cur_idx].lower() == "default":
-        log.warning("default not implementato")
+        log.debug("default value check not implementato")
 
     return (True, col_info)
 
@@ -159,12 +211,15 @@ def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
     for line in stmt_lines_list[cur_line_nr+1:]:
         # fragile way to detect end of column names
         # works only if code is formatted as requested
-        if re.match("[\w]*\)[\w]*$", line):
+        if re.match("[\w]*\)[\w]*$", line): # line with just ")"
             break
         try:
             (ok, type_info) = parse_column_decl(line)
+            log.info(type_info.dumpToStr())
+
         except Exception as e:
-            log.error("exiting: Exception: "+str(e)+"\nin line:\n"+line)
+            log.error("exiting: Exception maybe thrown from line : " +
+            str(traceback.format_exc())+" "+str(e)+"\nin line:\n"+line)
             sys.exit(1)
         if ok:
             log.debug(type_info.dumpToStr())
