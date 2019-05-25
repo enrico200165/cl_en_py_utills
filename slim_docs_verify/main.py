@@ -8,9 +8,7 @@ import check_sql_statements as sc
 import test_sql_statements_01 as t01
 
 import global_defs as g
-import patterns_table_names as e2p
 import e2bipatterns_checks as pc
-import check_table_names as tnc
 
 
 
@@ -36,10 +34,8 @@ def main():
     # sql = "create table FK_GDO_TT_KK"
     sql = t01.sql_test_ddl_01
 
-    # table names checker
-    tc = tnc.TableNamesChecker(e2p.patterns_tables)
 
-    sc.detect_build_dispatch_sqlstmt(t01.sql_test_ddl_01, tc)
+    sc.detect_build_dispatch_sqlstmt(t01.sql_test_ddl_01, None)
 
 
 main()

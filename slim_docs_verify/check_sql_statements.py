@@ -2,10 +2,9 @@
 import sys
 
 import global_defs as g
-import tokens_checks as tc
 import sql_preprocess as ih
 
-import sql_create_table_check as sqlcr
+import check_sql_create_table as sqlcr
 
 log = g.init_logging()
 

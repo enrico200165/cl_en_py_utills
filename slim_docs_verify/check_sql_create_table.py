@@ -1,9 +1,12 @@
 
 import sys
 import re
-import inspect
+import check_table_names as tnc
 import traceback
 import global_defs as g
+
+import patterns_table_names as e2p
+import patterns_col_names as pcn
 
 import utils_regex_tiny as rtu
 
@@ -180,8 +183,12 @@ def parse_column_decl(line, col_info):
     return True
 
 
-def check_sql_create_table(stmt_lines_list, table_patterns_checker):
+def check_sql_create_table(stmt_lines_list, config_par):
     """ check if CREATE TABLE is correct """
+
+    # table names checker
+    table_names_checker = tnc.PatternsListChecker(e2p.patterns_tables)
+    col_name_checker    = tnc.PatternsListChecker(pcn.patterns_cols)
 
     nr_errors_found = 0 # we try to count and go on
 
@@ -190,7 +197,7 @@ def check_sql_create_table(stmt_lines_list, table_patterns_checker):
     first_stmt_line = stmt_lines_list[cur_line_nr]
 
     table_name = find_table_name(first_stmt_line.split())
-    if not table_patterns_checker.check_table_name(table_name):
+    if not table_names_checker.check_against_patterns(table_name):
         log.warning("table name seems not correct: "+table_name)
         nr_errors_found = nr_errors_found + 1
 
@@ -213,8 +220,9 @@ def check_sql_create_table(stmt_lines_list, table_patterns_checker):
             if not parse_column_decl(line, col_info):
                 log.error("error parsing column decl namme, line:\n"+line)
                 continue
-
-            check_column_name(line)
+            log.warning(col_info.dumpToStr())
+            if not check_column_name(col_name_checker, col_info):
+                log.error('column name does not match patterns:\n{}'.format(col_info.dumpToStr()))
 
         except Exception as e:
             log.error("exiting: Exception maybe thrown from line : " +
@@ -228,7 +236,7 @@ def check_sql_create_table(stmt_lines_list, table_patterns_checker):
     return nr_errors_found > 0
 
 
-def check_column_name(col_name):
+def check_column_name(col_checker, col_info):
     """
     PK_<label di chiave primaria>
     IDN_<label IDN>_SK
@@ -238,7 +246,8 @@ def check_column_name(col_name):
     :return:
     """
 
+    # column names checker
+    if not col_checker.check_against_patterns(col_info._name):
+        return False
 
-
-
-    pass
+    return True

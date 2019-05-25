@@ -11,12 +11,12 @@ class TestCheck_table_name(TestCase):
 
 
     def setUp(self):
-        self._checker = tnc.TableNamesChecker()
+        self._checker = tnc.PatternsListChecker()
         pass
 
 
     def check(self, name):
-        return self._checker.check_table_name(name)
+        return self._checker.check_against_patterns(name)
 
 
     def test_check_table_name(self):
