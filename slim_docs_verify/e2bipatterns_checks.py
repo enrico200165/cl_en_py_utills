@@ -5,9 +5,9 @@ import logging
 
 
 import global_defs as g
-import e2bi_patterns as e2p
-import legal_systems as ls
-import regex_tiny_utils as ru
+import patterns_table_names as e2p
+import globals_legal_systems as ls
+import utils_regex_tiny as ru
 
 
 """

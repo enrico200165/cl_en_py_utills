@@ -5,7 +5,7 @@ import inspect
 import traceback
 import global_defs as g
 
-import regex_tiny_utils as rtu
+import utils_regex_tiny as rtu
 
 log = g.init_logging()
 
@@ -57,23 +57,22 @@ def find_table_name(tokens):
     return False
 
 
-
-
-def parse_column_decl(line):
+def parse_column_decl(line, col_info):
     """ parse column line in DDL and nothing more
     semantics check will be done in other function using
     as input the info parsed here
     return a tuple with (OK, ColumnInfo Object)
     """
-    col_info = ColumnInfo()
+    # col_info = ColumnInfo()
 
+    # remove ending , if any
     line = line[:-1].strip() if line[-1:] == "," else line.strip()
     col_info._line = line
 
     tokens = line.split()
     if len(tokens) < 2:
         log.error("less than 3 tokens found in line: \n"+line)
-        sys.exit()
+        return False
 
     (nullable, ret, cur_idx) = (True, True, 0)
 
@@ -85,9 +84,7 @@ def parse_column_decl(line):
 
     # --- type NB here only data estraction, no validation --
     cur_idx = cur_idx+1
-
     val2 = rtu.Val2Wrapper()
-
     temp_type = ""
 
     if tokens[cur_idx].lower() == "national":
@@ -99,13 +96,12 @@ def parse_column_decl(line):
 
     # national character varying(N)
     if tokens[cur_idx] == "character":
-        temp_type += "character"
         cur_idx = cur_idx+1
-        captured_groups = re.findall("varying\(([0-9]+)\)",tokens[cur_idx])
-        if captured_groups is not None:
-            assert(len(captured_groups) == 1)
-            col_info._size = int(captured_groups[0])
+        temp_type += "_character"
+        if rtu.matches_dbtypes_with_1size(["varying"], tokens[cur_idx].lower(), val2):
+            col_info._val1 = val2.val1
             temp_type += "_varying"
+            col_info._type = temp_type
 
     # =============== NUMERIC ===================
     # numeric without esplicit size
@@ -132,7 +128,7 @@ def parse_column_decl(line):
     # numeric types with 1 size parameter (ANY ?)
     elif rtu.matches_dbtypes_with_1size(char_types_1par_keywords,
                                         tokens[cur_idx].lower(), val2):
-        col_info._val1 = val2.val
+        col_info._val1 = val2.val1
         temp_type += val2.strval
     # numeric types with 2 size parameter (ANY ?)
     elif rtu.matches_dbtypes_with_2size(char_types_2par_keywords,
@@ -148,22 +144,22 @@ def parse_column_decl(line):
 
     else:
         log.error("unmanaged type: " + tokens[cur_idx] + " in " +line)
-        return (False, None)
+        return False
 
     col_info._type = temp_type
 
     # --- NOT NULL ------------------------------
     if cur_idx >= len(tokens)-1:
-        return (True, col_info)
+        return True
     else:
         cur_idx = cur_idx+1
     if tokens[cur_idx].lower() == "not":
         nullable = False
         if tokens[cur_idx+1].lower() != "null":
             log.error('"not" not followed by null in: '+line)
-            return (False, None)
+            return False
         if cur_idx >= len(tokens)-1:
-            return (True, col_info)
+            return True
         else:
             cur_idx = cur_idx+1
 
@@ -174,23 +170,22 @@ def parse_column_decl(line):
 
     # --- default -------------------------------
     if cur_idx >= len(tokens)-1:
-        return (True, col_info)
+        return True
     else:
         cur_idx = cur_idx+1
 
     if tokens[cur_idx].lower() == "default":
         log.debug("default value check not implementato")
 
-    return (True, col_info)
+    return True
 
 
-def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
+def check_sql_create_table(stmt_lines_list, table_patterns_checker):
     """ check if CREATE TABLE is correct """
 
     nr_errors_found = 0 # we try to count and go on
 
-    cur_line_nr = 0
-    nr_lines = len(stmt_lines_list)
+    (cur_line_nr, nr_lines) = (0, len(stmt_lines_list))
 
     first_stmt_line = stmt_lines_list[cur_line_nr]
 
@@ -214,17 +209,36 @@ def check_sql_create_stmt(stmt_lines_list, table_patterns_checker):
         if re.match("[\w]*\)[\w]*$", line): # line with just ")"
             break
         try:
-            (ok, type_info) = parse_column_decl(line)
-            log.info(type_info.dumpToStr())
+            col_info = ColumnInfo()
+            if not parse_column_decl(line, col_info):
+                log.error("error parsing column decl namme, line:\n"+line)
+                continue
+
+            check_column_name(line)
 
         except Exception as e:
             log.error("exiting: Exception maybe thrown from line : " +
             str(traceback.format_exc())+" "+str(e)+"\nin line:\n"+line)
             sys.exit(1)
         if ok:
-            log.debug(type_info.dumpToStr())
+            log.debug(col_info.dumpToStr())
         else:
             log.error("failed to parse line:\n" + line)
 
     return nr_errors_found > 0
 
+
+def check_column_name(col_name):
+    """
+    PK_<label di chiave primaria>
+    IDN_<label IDN>_SK
+    IDN_<label IDN>
+    IDC_<label IDC>
+    :param col_name:
+    :return:
+    """
+
+
+
+
+    pass

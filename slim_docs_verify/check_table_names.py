@@ -4,7 +4,7 @@ import global_defs as g
 import logging
 
 
-import e2bi_patterns as e2p
+import patterns_table_names as e2p
 import e2bipatterns_checks as pc
 
 
@@ -23,7 +23,7 @@ class TableNamesChecker(object):
         """
         pattern_wrappers_list = []
         if ad_hoc_test is None:
-            mask_lines = e2p.patterns_list.split("\n")
+            mask_lines = e2p.patterns_tables.split("\n")
         else:
             if isinstance(ad_hoc_test , list):
                 mask_lines = ad_hoc_test
@@ -45,13 +45,13 @@ class TableNamesChecker(object):
     def __init__(self, e2bi_patterns_list = None):
         self._patterns = self.generate_pattern_wrappers(e2bi_patterns_list)
 
+
     def check_table_name(self, token):
 
         (self._last_matched_pattern_wrapper, self._last_matched_token ) = (None, None)
 
-
-        if re.match('".*"', token):
-            token = token[1:-1]
+        # remove "" around table name, if any
+        token = token[1:-1] if re.match('".*"', token) else token
 
         # check if it is matched by one of the patterns
         # TODO now patters are not only for tables, check if must be changed

@@ -5,7 +5,7 @@ currently all (also columns names Etc"
 
 import sys
 import re
-import e2bi_patterns
+import patterns_table_names
 import global_defs as g
 
 log = g.init_logging()

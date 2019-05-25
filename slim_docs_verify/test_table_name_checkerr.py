@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import global_defs as g
 
-import table_names_checker as tnc
+import check_table_names as tnc
 
 
 log = g.init_logging()

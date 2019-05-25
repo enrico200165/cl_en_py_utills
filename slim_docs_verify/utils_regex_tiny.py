@@ -77,7 +77,7 @@ def matches_dbtype_with_1size(root_word, str_to_check, valwrapper):
     ptrn = root_word+"\([\s]*([0-9]*)[\s]*\)"
     captured_groups = re.findall(ptrn,str_to_check)
     if captured_groups is not None and len(captured_groups) == 1:
-        valwrapper.val = int(captured_groups[0])
+        valwrapper.val1 = int(captured_groups[0])
         valwrapper.strval = root_word
         return True
     else:

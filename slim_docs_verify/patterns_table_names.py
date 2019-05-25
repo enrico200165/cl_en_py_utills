@@ -1,12 +1,6 @@
 
 
-#masks_lines_lists = "MV_ODS_{<sistema sorgente>/<sistema BI>/COM}_{DT/LV/LH/LM/SC}_<label>"
-
-
-#patterns_list  = "T_BSC_<sistema sorgente>_<nome tabella sorgente>"
-
-
-patterns_list = '''
+patterns_tables = '''
 T_MTD_<raggruppamento>_{DT/LV/LH/LM/SC/DL}_<label>	
 T_BSC_<sistema sorgente>_<nome tabella sorgente>
 T_STG_{<sistema sorgente>/<sistema BI>}_{DT/LV/LH/LM/SC/DL}_<nome tabella o vista senza prefissi>_[KEY/RT/DD/WW/MM]	
@@ -34,8 +28,6 @@ MV_DMT_<sistema sorgente>/<sistema BI>_{DM/FT/FA/LM}_<label>
 MV_TDL_{<sistema sorgente>/<sistema BI>/ALL}_{DT/LV/LH/LM/LN/TT/SC}_<label>
 <acronimo tipo dato>_<label>
 <acronimo tipo dato>_<label>			
-PK_<nome tabella senza prefisso T_>					
-FK_<nome tabella padre senza prefisso T_>[_ <label>]					
 SEQ_MTD_<label>	
 SEQ_BSC_<label>	
 SEQ_STG_<label>	

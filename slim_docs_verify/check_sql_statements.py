@@ -20,7 +20,7 @@ def process_stmt_lines(stmt_type, stmt_lines, table_patterns_checker):
     if False: # just for uniform syntax
         pass
     elif stmt_type == g.SQLStmtType.CREATE_TABLE:
-        ret = sqlcr.check_sql_create_stmt(stmt_lines, table_patterns_checker)
+        ret = sqlcr.check_sql_create_table(stmt_lines, table_patterns_checker)
     elif stmt_type == g.SQLStmtType.ALTER_TABLE:
         log.info("Warn: statement not yet supported: "+stmt_lines[0])
         ret = False

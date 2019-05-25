@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-import regex_tiny_utils as rtu
+import utils_regex_tiny as rtu
 import global_defs as g
 
 
